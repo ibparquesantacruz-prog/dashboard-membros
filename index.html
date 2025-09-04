@@ -118,6 +118,27 @@
             border-color: #3a5fc8;
         }
         
+        .form-label.required::after {
+            content: " *";
+            color: #e74a3b;
+        }
+        
+        .invalid-feedback {
+            display: none;
+            color: #e74a3b;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .was-validated .form-control:invalid, .form-control.is-invalid {
+            border-color: #e74a3b;
+        }
+        
+        .was-validated .form-control:invalid ~ .invalid-feedback, 
+        .form-control.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -129,6 +150,10 @@
                 margin-left: 0;
                 width: 100%;
             }
+        }
+        
+        .progress-bar {
+            transition: width 0.3s ease;
         }
     </style>
 </head>
@@ -405,6 +430,23 @@
                         </div>
                     </div>
                     
+                    <!-- Barra de progresso e status -->
+                    <div class="card card-dashboard mb-4 d-none" id="importStatusCard">
+                        <div class="card-header py-3">
+                            <h5 class="m-0 font-weight-bold text-primary">Status da Importação</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="progress mb-3" style="height: 20px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%" 
+                                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="importProgress">
+                                    0%
+                                </div>
+                            </div>
+                            <div id="importStatusText">Preparando importação...</div>
+                        </div>
+                    </div>
+                    
                     <div class="card card-dashboard">
                         <div class="card-header py-3">
                             <h5 class="m-0 font-weight-bold text-primary">Visualização Prévia dos Dados</h5>
@@ -419,6 +461,8 @@
                                             <th>Sexo</th>
                                             <th>Membro</th>
                                             <th>Batizado</th>
+                                            <th>Data Nasc.</th>
+                                            <th>CPF</th>
                                         </tr>
                                     </thead>
                                     <tbody id="previewTableBody">
@@ -442,46 +486,55 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="membroForm">
+                    <form id="membroForm" class="needs-validation" novalidate>
                         <input type="hidden" id="membroId">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="nome" class="form-label">Nome</label>
+                                <label for="nome" class="form-label required">Nome</label>
                                 <input type="text" class="form-control" id="nome" required>
+                                <div class="invalid-feedback">Por favor, informe o nome.</div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="status" class="form-label">Status</label>
+                                <label for="status" class="form-label required">Status</label>
                                 <select class="form-select" id="status" required>
+                                    <option value="">Selecione...</option>
                                     <option value="Ativo">Ativo</option>
                                     <option value="Inativo">Inativo</option>
                                 </select>
+                                <div class="invalid-feedback">Por favor, selecione o status.</div>
                             </div>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="sexo" class="form-label">Sexo</label>
+                                <label for="sexo" class="form-label required">Sexo</label>
                                 <select class="form-select" id="sexo" required>
+                                    <option value="">Selecione...</option>
                                     <option value="Masculino">Masculino</option>
                                     <option value="Feminino">Feminino</option>
                                 </select>
+                                <div class="invalid-feedback">Por favor, selecione o sexo.</div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="membro" class="form-label">Membro</label>
+                                <label for="membro" class="form-label required">Membro</label>
                                 <select class="form-select" id="membro" required>
+                                    <option value="">Selecione...</option>
                                     <option value="Sim">Sim</option>
                                     <option value="Não">Não</option>
                                 </select>
+                                <div class="invalid-feedback">Por favor, selecione se é membro.</div>
                             </div>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="batizado" class="form-label">Batizado</label>
+                                <label for="batizado" class="form-label required">Batizado</label>
                                 <select class="form-select" id="batizado" required>
+                                    <option value="">Selecione...</option>
                                     <option value="Sim">Sim</option>
                                     <option value="Não">Não</option>
                                 </select>
+                                <div class="invalid-feedback">Por favor, selecione se é batizado.</div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="celular" class="form-label">Celular</label>
@@ -509,7 +562,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="cpf" class="form-label">CPF</label>
-                                <input type="text" class="form-control" id="cpf">
+                                <input type="text" class="form-control" id="cpf" placeholder="000.000.000-00">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="rg" class="form-label">RG</label>
@@ -567,6 +620,24 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Sucesso -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Sucesso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="successMessage">Operação realizada com sucesso!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
                 </div>
             </div>
         </div>
@@ -660,14 +731,49 @@
                 return;
             }
             
+            // Mostrar barra de progresso
+            const statusCard = document.getElementById('importStatusCard');
+            const progressBar = document.getElementById('importProgress');
+            const statusText = document.getElementById('importStatusText');
+            
+            statusCard.classList.remove('d-none');
+            progressBar.style.width = '10%';
+            progressBar.textContent = '10%';
+            statusText.textContent = 'Iniciando importação...';
+            
             Papa.parse(file, {
                 header: true,
+                step: function(results, parser) {
+                    // Atualizar progresso a cada linha processada
+                    const progress = Math.min(90, Math.floor((results.meta.cursor / results.meta.aborted) * 90));
+                    progressBar.style.width = progress + '%';
+                    progressBar.textContent = progress + '%';
+                    statusText.textContent = `Processando linha ${results.meta.cursor} de ${results.meta.aborted}...`;
+                },
                 complete: function(results) {
                     if (results.data && results.data.length > 0) {
                         console.log('Dados brutos do CSV:', results.data[0]);
                         
+                        // Atualizar progresso
+                        progressBar.style.width = '100%';
+                        progressBar.textContent = '100%';
+                        statusText.textContent = 'Processamento concluído!';
+                        
                         // Processar dados
                         membros = results.data.map(row => {
+                            // Formatar data se existir
+                            let dataNascFormatada = '';
+                            if (row.DataNasc || row['Data Nasc'] || row['Data de Nascimento']) {
+                                const dataOriginal = row.DataNasc || row['Data Nasc'] || row['Data de Nascimento'];
+                                dataNascFormatada = formatarData(dataOriginal);
+                            }
+                            
+                            // Formatar CPF se existir
+                            let cpfFormatado = '';
+                            if (row.CPF || row.cpf) {
+                                cpfFormatado = formatarCPF(row.CPF || row.cpf);
+                            }
+                            
                             return {
                                 Nome: row.Nome || row.nome || row['Nome Completo'] || '',
                                 Status: row.Status || row.status || row.Situação || 'Ativo',
@@ -675,9 +781,9 @@
                                 Membro: row.Membro || row.membro || row['É Membro'] || 'Sim',
                                 Batizado: row.Batizado || row.batizado || row['Batismo'] || 'Não',
                                 Celular: row.Celular || row.celular || row.Telefone || row.telefone || '',
-                                DataNasc: row.DataNasc || row['Data Nasc'] || row['Data de Nascimento'] || row['Data Nascimento'] || '',
+                                DataNasc: dataNascFormatada,
                                 RG: row.RG || row.rg || '',
-                                CPF: row.CPF || row.cpf || '',
+                                CPF: cpfFormatado,
                                 EstadoCivil: row.EstadoCivil || row['Estado Civil'] || row['estado civil'] || '',
                                 Endereco: row.Endereco || row.Endereço || row.endereço || '',
                                 Bairro: row.Bairro || row.bairro || '',
@@ -700,23 +806,75 @@
                         // LIMPAR O INPUT PARA PERMITIR NOVA SELEÇÃO
                         fileInput.value = '';
                         
-                        alert(`Dados importados com sucesso! ${membros.length} registros processados.`);
+                        // Mostrar mensagem de sucesso
+                        showSuccessModal('Importação concluída com sucesso! ' + membros.length + ' registros processados.');
+                        
+                        // Esconder barra de progresso após 2 segundos
+                        setTimeout(() => {
+                            statusCard.classList.add('d-none');
+                        }, 2000);
+                        
                     } else {
                         alert('O arquivo CSV está vazio ou não pôde ser processado.');
                         fileInput.value = ''; // Limpar também em caso de erro
+                        statusCard.classList.add('d-none');
                     }
                 },
                 error: function(error) {
                     console.error('Erro ao processar CSV:', error);
                     alert('Erro ao processar o arquivo CSV. Verifique o formato. Dica: Use vírgula como delimitador.');
                     fileInput.value = ''; // Limpar em caso de erro
+                    statusCard.classList.add('d-none');
                 }
             });
+        }
+
+        function formatarData(data) {
+            if (!data) return '';
+            
+            // Tentar diferentes formatos de data
+            try {
+                // Se já estiver no formato YYYY-MM-DD
+                if (/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+                    return data;
+                }
+                
+                // Se estiver no formato DD/MM/YYYY
+                if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
+                    const partes = data.split('/');
+                    return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+                }
+                
+                // Se for uma data válida
+                const dataObj = new Date(data);
+                if (!isNaN(dataObj.getTime())) {
+                    return dataObj.toISOString().split('T')[0];
+                }
+            } catch (e) {
+                console.error('Erro ao formatar data:', e);
+            }
+            
+            return data; // Retorna original se não conseguir formatar
+        }
+
+        function formatarCPF(cpf) {
+            if (!cpf) return '';
+            
+            // Remove caracteres não numéricos
+            cpf = cpf.replace(/\D/g, '');
+            
+            // Formata no padrão 000.000.000-00
+            if (cpf.length === 11) {
+                return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            }
+            
+            return cpf; // Retorna original se não tiver 11 dígitos
         }
 
         function clearCSV() {
             document.getElementById('csvFile').value = '';
             document.getElementById('previewTableBody').innerHTML = '';
+            document.getElementById('importStatusCard').classList.add('d-none');
         }
 
         function showPreview() {
@@ -734,6 +892,8 @@
                     <td>${membro.Sexo}</td>
                     <td>${membro.Membro}</td>
                     <td>${membro.Batizado}</td>
+                    <td>${membro.DataNasc || ''}</td>
+                    <td>${membro.CPF || ''}</td>
                 `;
                 previewBody.appendChild(row);
             });
@@ -962,12 +1122,23 @@
             document.getElementById('mae').value = membro.Mae;
             document.getElementById('pai').value = membro.Pai;
             
+            // Remover classes de validação
+            document.getElementById('membroForm').classList.remove('was-validated');
+            
             // Abrir o modal
             const modal = new bootstrap.Modal(document.getElementById('adicionarMembroModal'));
             modal.show();
         }
 
         function saveMembro() {
+            const form = document.getElementById('membroForm');
+            
+            // Validar formulário
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            
             // Coletar dados do formulário
             const memberId = document.getElementById('membroId').value;
             const membroData = {
@@ -987,12 +1158,6 @@
                 Mae: document.getElementById('mae').value,
                 Pai: document.getElementById('pai').value
             };
-            
-            // Validar dados obrigatórios
-            if (!membroData.Nome || !membroData.Status || !membroData.Sexo || !membroData.Membro || !membroData.Batizado) {
-                alert('Por favor, preencha todos os campos obrigatórios.');
-                return;
-            }
             
             if (memberId) {
                 // Editar membro existente
@@ -1020,8 +1185,16 @@
             // Limpar o formulário
             document.getElementById('membroForm').reset();
             document.getElementById('membroId').value = '';
+            form.classList.remove('was-validated');
             
-            alert('Membro salvo com sucesso!');
+            // Mostrar mensagem de sucesso
+            showSuccessModal('Registro salvo com sucesso!');
+        }
+
+        function showSuccessModal(message) {
+            document.getElementById('successMessage').textContent = message;
+            const modal = new bootstrap.Modal(document.getElementById('successModal'));
+            modal.show();
         }
 
         function showDeleteConfirm(memberId) {
@@ -1045,7 +1218,8 @@
                 updateDashboard();
                 renderMembrosTable();
                 
-                alert('Membro excluído com sucesso!');
+                // Mostrar mensagem de sucesso
+                showSuccessModal('Membro excluído com sucesso!');
             }
             
             // Fechar o modal
@@ -1192,7 +1366,7 @@
                         updateDashboard();
                         renderMembrosTable();
                         
-                        alert('Dados restaurados com sucesso!');
+                        showSuccessModal('Dados restaurados com sucesso!');
                     } else {
                         alert('O arquivo não contém dados válidos.');
                     }
