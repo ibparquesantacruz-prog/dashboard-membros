@@ -401,6 +401,7 @@
                                 <input class="form-control" type="file" id="csvFile" accept=".csv">
                             </div>
                             <button class="btn btn-primary" id="importCsvBtn">Importar CSV</button>
+                            <button class="btn btn-secondary ms-2" id="clearCsvBtn">Limpar</button>
                         </div>
                     </div>
                     
@@ -627,6 +628,7 @@
         function setupEventListeners() {
             // Importar CSV
             document.getElementById('importCsvBtn').addEventListener('click', importCSV);
+            document.getElementById('clearCsvBtn').addEventListener('click', clearCSV);
             
             // Buscar membros
             document.getElementById('searchInput').addEventListener('input', renderMembrosTable);
@@ -660,36 +662,28 @@
             
             Papa.parse(file, {
                 header: true,
-                delimiter: ';',
                 complete: function(results) {
                     if (results.data && results.data.length > 0) {
+                        console.log('Dados brutos do CSV:', results.data[0]);
+                        
                         // Processar dados
                         membros = results.data.map(row => {
-                            // Garantir que todos os campos necessários existam
                             return {
-                                Nome: row.Nome || '',
-                                Status: row.Status || '',
-                                Sexo: row.Sexo || '',
-                                Membro: row.Membro || '',
-                                Batizado: row.Batizado || '',
-                                Celular: row.Celular || '',
-                                DataNasc: row['Data Nasc'] || '',
-                                RG: row.RG || '',
-                                OrgExp: row['ORG. EXP.'] || '',
-                                CPF: row.CPF || '',
-                                Naturalidade: row.Naturalidade || '',
-                                IgrejaBatismo: row['Igreja do Batismo'] || '',
-                                DataBatismo: row['Data do Batismo'] || '',
-                                EstadoCivil: row['Estado Civil'] || '',
-                                DataCasamento: row['Data do Casamento'] || '',
-                                NomeConjuge: row['Nome do Conjuge'] || '',
-                                Endereco: row.Endereço || '',
-                                Complemento: row.Complemento || '',
-                                Bairro: row.Bairro || '',
-                                Cidade: row.Cidade || '',
-                                Telefone: row.Telefone || '',
-                                Mae: row.Mae || '',
-                                Pai: row.Pai || ''
+                                Nome: row.Nome || row.nome || row['Nome Completo'] || '',
+                                Status: row.Status || row.status || row.Situação || 'Ativo',
+                                Sexo: row.Sexo || row.sexo || row.Gênero || 'Masculino',
+                                Membro: row.Membro || row.membro || row['É Membro'] || 'Sim',
+                                Batizado: row.Batizado || row.batizado || row['Batismo'] || 'Não',
+                                Celular: row.Celular || row.celular || row.Telefone || row.telefone || '',
+                                DataNasc: row.DataNasc || row['Data Nasc'] || row['Data de Nascimento'] || row['Data Nascimento'] || '',
+                                RG: row.RG || row.rg || '',
+                                CPF: row.CPF || row.cpf || '',
+                                EstadoCivil: row.EstadoCivil || row['Estado Civil'] || row['estado civil'] || '',
+                                Endereco: row.Endereco || row.Endereço || row.endereço || '',
+                                Bairro: row.Bairro || row.bairro || '',
+                                Cidade: row.Cidade || row.cidade || '',
+                                Mae: row.Mae || row.Mãe || row['Nome da Mãe'] || '',
+                                Pai: row.Pai || row['Nome do Pai'] || ''
                             };
                         });
                         
@@ -703,16 +697,26 @@
                         // Mostrar preview
                         showPreview();
                         
+                        // LIMPAR O INPUT PARA PERMITIR NOVA SELEÇÃO
+                        fileInput.value = '';
+                        
                         alert(`Dados importados com sucesso! ${membros.length} registros processados.`);
                     } else {
                         alert('O arquivo CSV está vazio ou não pôde ser processado.');
+                        fileInput.value = ''; // Limpar também em caso de erro
                     }
                 },
                 error: function(error) {
                     console.error('Erro ao processar CSV:', error);
-                    alert('Erro ao processar o arquivo CSV. Verifique o formato.');
+                    alert('Erro ao processar o arquivo CSV. Verifique o formato. Dica: Use vírgula como delimitador.');
+                    fileInput.value = ''; // Limpar em caso de erro
                 }
             });
+        }
+
+        function clearCSV() {
+            document.getElementById('csvFile').value = '';
+            document.getElementById('previewTableBody').innerHTML = '';
         }
 
         function showPreview() {
