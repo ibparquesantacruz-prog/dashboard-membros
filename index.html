@@ -139,6 +139,10 @@
             display: block;
         }
         
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -152,8 +156,15 @@
             }
         }
         
-        .progress-bar {
-            transition: width 0.3s ease;
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            display: none;
         }
     </style>
 </head>
@@ -306,9 +317,14 @@
                 <div class="content-section d-none" id="membros-section">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2>Gerenciar Membros</h2>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#adicionarMembroModal">
-                            <i class="bi bi-plus-circle me-1"></i> Adicionar Membro
-                        </button>
+                        <div>
+                            <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#adicionarMembroModal">
+                                <i class="bi bi-plus-circle me-1"></i> Adicionar Membro
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="addSampleData()">
+                                <i class="bi bi-lightning me-1"></i> Dados de Exemplo
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="card card-dashboard mb-4">
@@ -427,6 +443,9 @@
                             </div>
                             <button class="btn btn-primary" id="importCsvBtn">Importar CSV</button>
                             <button class="btn btn-secondary ms-2" id="clearCsvBtn">Limpar</button>
+                            <button class="btn btn-info ms-2" onclick="downloadCSVTemplate()">
+                                <i class="bi bi-download me-1"></i> Baixar Modelo CSV
+                            </button>
                         </div>
                     </div>
                     
@@ -445,6 +464,12 @@
                             </div>
                             <div id="importStatusText">Preparando importação...</div>
                         </div>
+                    </div>
+                    
+                    <!-- Debug info -->
+                    <div class="debug-info" id="debugInfo">
+                        <h6>Informações de Debug:</h6>
+                        <div id="debugContent"></div>
                     </div>
                     
                     <div class="card card-dashboard">
@@ -538,7 +563,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="celular" class="form-label">Celular</label>
-                                <input type="text" class="form-control" id="celular">
+                                <input type="text" class="form-control" id="celular" placeholder="(11) 99999-9999">
                             </div>
                         </div>
                         
@@ -566,13 +591,13 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="rg" class="form-label">RG</label>
-                                <input type="text" class="form-control" id="rg">
+                                <input type="text" class="form-control" id="rg" placeholder="00.000.000-0">
                             </div>
                         </div>
                         
                         <div class="mb-3">
                             <label for="endereco" class="form-label">Endereço</label>
-                            <input type="text" class="form-control" id="endereco">
+                            <input type="text" class="form-control" id="endereco" placeholder="Rua, número, complemento">
                         </div>
                         
                         <div class="row">
@@ -664,9 +689,14 @@
             // Carregar dados do localStorage se existirem
             const savedData = localStorage.getItem('membrosData');
             if (savedData) {
-                membros = JSON.parse(savedData);
-                updateDashboard();
-                renderMembrosTable();
+                try {
+                    membros = JSON.parse(savedData);
+                    updateDashboard();
+                    renderMembrosTable();
+                } catch (e) {
+                    console.error('Erro ao carregar dados:', e);
+                    membros = [];
+                }
             }
 
             // Configurar navegação
@@ -740,112 +770,149 @@
             progressBar.style.width = '10%';
             progressBar.textContent = '10%';
             statusText.textContent = 'Iniciando importação...';
-            
+
+            // Primeiro, fazer debug do arquivo
+            debugCSV(file);
+
+            // Configurações robustas para o PapaParse
             Papa.parse(file, {
                 header: true,
-                step: function(results, parser) {
-                    // Atualizar progresso a cada linha processada
-                    const progress = Math.min(90, Math.floor((results.meta.cursor / results.meta.aborted) * 90));
-                    progressBar.style.width = progress + '%';
-                    progressBar.textContent = progress + '%';
-                    statusText.textContent = `Processando linha ${results.meta.cursor} de ${results.meta.aborted}...`;
+                delimiter: ',', // Força vírgula como delimitador
+                newline: '\n',
+                encoding: 'UTF-8',
+                skipEmptyLines: true,
+                transformHeader: function(header) {
+                    // Normaliza os cabeçalhos
+                    return header.trim().toLowerCase().replace(/\s+/g, '');
                 },
                 complete: function(results) {
+                    console.log('Resultado completo do parsing:', results);
+                    
                     if (results.data && results.data.length > 0) {
-                        console.log('Dados brutos do CSV:', results.data[0]);
-                        
                         // Atualizar progresso
                         progressBar.style.width = '100%';
                         progressBar.textContent = '100%';
                         statusText.textContent = 'Processamento concluído!';
                         
                         // Processar dados
-                        membros = results.data.map(row => {
+                        const novosMembros = results.data.map((row, index) => {
                             // Formatar data se existir
                             let dataNascFormatada = '';
-                            if (row.DataNasc || row['Data Nasc'] || row['Data de Nascimento']) {
-                                const dataOriginal = row.DataNasc || row['Data Nasc'] || row['Data de Nascimento'];
+                            const dataOriginal = row.datanasc || row.datanascimento || row['datanasc'] || '';
+                            if (dataOriginal) {
                                 dataNascFormatada = formatarData(dataOriginal);
                             }
                             
                             // Formatar CPF se existir
                             let cpfFormatado = '';
-                            if (row.CPF || row.cpf) {
-                                cpfFormatado = formatarCPF(row.CPF || row.cpf);
+                            if (row.cpf) {
+                                cpfFormatado = formatarCPF(row.cpf.toString());
                             }
                             
                             return {
-                                Nome: row.Nome || row.nome || row['Nome Completo'] || '',
-                                Status: row.Status || row.status || row.Situação || 'Ativo',
-                                Sexo: row.Sexo || row.sexo || row.Gênero || 'Masculino',
-                                Membro: row.Membro || row.membro || row['É Membro'] || 'Sim',
-                                Batizado: row.Batizado || row.batizado || row['Batismo'] || 'Não',
-                                Celular: row.Celular || row.celular || row.Telefone || row.telefone || '',
+                                Nome: row.nome || `Membro ${index + 1}`,
+                                Status: row.status || 'Ativo',
+                                Sexo: row.sexo || 'Masculino',
+                                Membro: row.membro || 'Sim',
+                                Batizado: row.batizado || 'Não',
+                                Celular: row.celular || row.telefone || '',
                                 DataNasc: dataNascFormatada,
-                                RG: row.RG || row.rg || '',
+                                RG: row.rg || '',
                                 CPF: cpfFormatado,
-                                EstadoCivil: row.EstadoCivil || row['Estado Civil'] || row['estado civil'] || '',
-                                Endereco: row.Endereco || row.Endereço || row.endereço || '',
-                                Bairro: row.Bairro || row.bairro || '',
-                                Cidade: row.Cidade || row.cidade || '',
-                                Mae: row.Mae || row.Mãe || row['Nome da Mãe'] || '',
-                                Pai: row.Pai || row['Nome do Pai'] || ''
+                                EstadoCivil: row.estadocivil || row.estado_civil || '',
+                                Endereco: row.endereço || row.endereco || '',
+                                Bairro: row.bairro || '',
+                                Cidade: row.cidade || '',
+                                Mae: row.nomedamãe || row.nomedamae || row.mae || '',
+                                Pai: row.nomedopai || row.pai || ''
                             };
-                        });
+                        }).filter(membro => membro.Nome && membro.Nome !== 'Membro'); // Remove linhas vazias
                         
-                        // Salvar no localStorage
-                        localStorage.setItem('membrosData', JSON.stringify(membros));
+                        console.log('Membros processados:', novosMembros);
                         
-                        // Atualizar a interface
-                        updateDashboard();
-                        renderMembrosTable();
-                        
-                        // Mostrar preview
-                        showPreview();
-                        
-                        // LIMPAR O INPUT PARA PERMITIR NOVA SELEÇÃO
-                        fileInput.value = '';
-                        
-                        // Mostrar mensagem de sucesso
-                        showSuccessModal('Importação concluída com sucesso! ' + membros.length + ' registros processados.');
-                        
-                        // Esconder barra de progresso após 2 segundos
-                        setTimeout(() => {
-                            statusCard.classList.add('d-none');
-                        }, 2000);
+                        if (novosMembros.length > 0) {
+                            membros = novosMembros;
+                            
+                            // Salvar no localStorage
+                            localStorage.setItem('membrosData', JSON.stringify(membros));
+                            
+                            // Atualizar a interface
+                            updateDashboard();
+                            renderMembrosTable();
+                            
+                            // Mostrar preview
+                            showPreview();
+                            
+                            // Mostrar mensagem de sucesso
+                            showSuccessModal('Importação concluída com sucesso! ' + membros.length + ' registros processados.');
+                        } else {
+                            alert('Nenhum dado válido encontrado no arquivo.');
+                        }
                         
                     } else {
-                        alert('O arquivo CSV está vazio ou não pôde ser processado.');
-                        fileInput.value = ''; // Limpar também em caso de erro
-                        statusCard.classList.add('d-none');
+                        let errorMsg = 'O arquivo CSV está vazio ou não pôde ser processado.';
+                        if (results.errors && results.errors.length) {
+                            errorMsg += '\nErros: ' + results.errors.map(e => e.message).join(', ');
+                        }
+                        alert(errorMsg);
+                        console.error('Erros do PapaParse:', results.errors);
                     }
+                    
+                    // Esconder barra de progresso após 2 segundos
+                    setTimeout(() => {
+                        statusCard.classList.add('d-none');
+                    }, 2000);
+                    
+                    // Limpar o input
+                    fileInput.value = '';
                 },
                 error: function(error) {
                     console.error('Erro ao processar CSV:', error);
-                    alert('Erro ao processar o arquivo CSV. Verifique o formato. Dica: Use vírgula como delimitador.');
-                    fileInput.value = ''; // Limpar em caso de erro
+                    alert('Erro ao processar o arquivo CSV: ' + error.message);
+                    fileInput.value = '';
                     statusCard.classList.add('d-none');
                 }
             });
         }
 
+        function debugCSV(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                console.log('Conteúdo bruto do arquivo:');
+                console.log(content);
+                
+                // Mostrar informações de debug na interface
+                const debugInfo = document.getElementById('debugInfo');
+                const debugContent = document.getElementById('debugContent');
+                
+                debugInfo.style.display = 'block';
+                debugContent.innerHTML = `
+                    <p><strong>Primeiras 5 linhas:</strong></p>
+                    <pre>${content.split('\n').slice(0, 5).join('\n')}</pre>
+                    <p><strong>Tamanho do arquivo:</strong> ${content.length} caracteres</p>
+                    <p><strong>Número de linhas:</strong> ${content.split('\n').length}</p>
+                `;
+            };
+            reader.readAsText(file);
+        }
+
         function formatarData(data) {
             if (!data) return '';
             
-            // Tentar diferentes formatos de data
+            // Se já estiver no formato YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+                return data;
+            }
+            
+            // Se estiver no formato DD/MM/YYYY
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
+                const partes = data.split('/');
+                return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+            }
+            
+            // Se for uma data válida
             try {
-                // Se já estiver no formato YYYY-MM-DD
-                if (/^\d{4}-\d{2}-\d{2}$/.test(data)) {
-                    return data;
-                }
-                
-                // Se estiver no formato DD/MM/YYYY
-                if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
-                    const partes = data.split('/');
-                    return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
-                }
-                
-                // Se for uma data válida
                 const dataObj = new Date(data);
                 if (!isNaN(dataObj.getTime())) {
                     return dataObj.toISOString().split('T')[0];
@@ -861,7 +928,7 @@
             if (!cpf) return '';
             
             // Remove caracteres não numéricos
-            cpf = cpf.replace(/\D/g, '');
+            cpf = cpf.toString().replace(/\D/g, '');
             
             // Formata no padrão 000.000.000-00
             if (cpf.length === 11) {
@@ -875,6 +942,72 @@
             document.getElementById('csvFile').value = '';
             document.getElementById('previewTableBody').innerHTML = '';
             document.getElementById('importStatusCard').classList.add('d-none');
+            document.getElementById('debugInfo').style.display = 'none';
+        }
+
+        function downloadCSVTemplate() {
+            const csvContent = `nome,status,sexo,membro,batizado,datanasc,cpf,celular,estadocivil,rg,endereco,bairro,cidade,mae,pai
+João Silva,Ativo,Masculino,Sim,Sim,15/03/1985,12345678901,11999998888,Casado,12345678,Rua das Flores 123,Centro,São Paulo,Maria Silva,José Silva
+Maria Santos,Ativo,Feminino,Sim,Sim,22/07/1990,98765432100,11988887777,Solteiro,87654321,Av. Paulista 456,Bela Vista,São Paulo,Ana Santos,Carlos Santos
+Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Divorciado,45678912,Rua Augusta 789,Consolação,São Paulo,Clara Oliveira,Paulo Oliveira`;
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'modelo_membros.csv');
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function addSampleData() {
+            const sampleData = [
+                {
+                    Nome: "João Silva",
+                    Status: "Ativo",
+                    Sexo: "Masculino",
+                    Membro: "Sim",
+                    Batizado: "Sim",
+                    Celular: "(11) 99999-8888",
+                    DataNasc: "1985-03-15",
+                    CPF: "123.456.789-01",
+                    RG: "12.345.678-9",
+                    EstadoCivil: "Casado",
+                    Endereco: "Rua das Flores, 123",
+                    Bairro: "Centro",
+                    Cidade: "São Paulo",
+                    Mae: "Maria Silva",
+                    Pai: "José Silva"
+                },
+                {
+                    Nome: "Maria Santos",
+                    Status: "Ativo",
+                    Sexo: "Feminino",
+                    Membro: "Sim",
+                    Batizado: "Não",
+                    Celular: "(11) 88888-7777",
+                    DataNasc: "1990-07-22",
+                    CPF: "987.654.321-00",
+                    RG: "87.654.321-0",
+                    EstadoCivil: "Solteiro",
+                    Endereco: "Av. Paulista, 456",
+                    Bairro: "Bela Vista",
+                    Cidade: "São Paulo",
+                    Mae: "Ana Santos",
+                    Pai: "Carlos Santos"
+                }
+            ];
+
+            membros = [...membros, ...sampleData];
+            localStorage.setItem('membrosData', JSON.stringify(membros));
+            
+            updateDashboard();
+            renderMembrosTable();
+            showSuccessModal('Dados de exemplo adicionados com sucesso!');
         }
 
         function showPreview() {
@@ -1059,6 +1192,8 @@
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
             
+            if (totalPages <= 1) return;
+            
             // Botão anterior
             const prevLi = document.createElement('li');
             prevLi.classList.add('page-item', currentPage === 1 ? 'disabled' : '');
@@ -1163,7 +1298,6 @@
                 // Editar membro existente
                 const index = membros.findIndex(m => m.Nome === memberId);
                 if (index !== -1) {
-                    // Manter os dados não editados no formulário
                     membros[index] = { ...membros[index], ...membroData };
                 }
             } else {
