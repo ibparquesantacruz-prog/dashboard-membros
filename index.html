@@ -398,6 +398,7 @@
                                         <option value="batismo">Por Batismo</option>
                                         <option value="estadoCivil">Por Estado Civil</option>
                                         <option value="membro">Por Tipo de Membro</option>
+                                        <option value="aniversariantes">Aniversariantes</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4 mb-2">
@@ -1515,5 +1516,95 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
             evt.target.value = '';
         }
     </script>
+
+function generateReport() {
+    const reportType = document.getElementById('relatorioTipo').value;
+    const relatorioHeader = document.getElementById('relatorioHeader');
+    const relatorioBody = document.getElementById('relatorioBody');
+    
+    relatorioHeader.innerHTML = '';
+    relatorioBody.innerHTML = '';
+    
+    let headers = [];
+    
+    if (reportType === 'aniversariantes') {
+        // Pergunta o mês ao usuário
+        const mes = prompt("Digite o número do mês (1-12):");
+        if (!mes || isNaN(mes) || mes < 1 || mes > 12) {
+            alert("Mês inválido.");
+            return;
+        }
+
+        headers = ['Nome', 'Data de Nascimento'];
+        headers.forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header;
+            relatorioHeader.appendChild(th);
+        });
+
+        const aniversariantes = membros.filter(m => {
+            if (!m.DataNasc) return false;
+            const data = new Date(m.DataNasc);
+            return (data.getMonth() + 1) == mes;
+        });
+
+        aniversariantes.forEach(m => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${m.Nome}</td>
+                <td>${m.DataNasc}</td>
+            `;
+            relatorioBody.appendChild(row);
+        });
+
+        return;
+    }
+
+    // Relatórios tradicionais
+    let field;
+    switch (reportType) {
+        case 'status':
+            headers = ['Status', 'Quantidade', 'Percentual', 'Nomes'];
+            field = 'Status';
+            break;
+        case 'sexo':
+            headers = ['Sexo', 'Quantidade', 'Percentual', 'Nomes'];
+            field = 'Sexo';
+            break;
+        case 'batismo':
+            headers = ['Batizado', 'Quantidade', 'Percentual', 'Nomes'];
+            field = 'Batizado';
+            break;
+        case 'estadoCivil':
+            headers = ['Estado Civil', 'Quantidade', 'Percentual', 'Nomes'];
+            field = 'EstadoCivil';
+            break;
+        case 'membro':
+            headers = ['Tipo de Membro', 'Quantidade', 'Percentual', 'Nomes'];
+            field = 'Membro';
+            break;
+    }
+    
+    headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        relatorioHeader.appendChild(th);
+    });
+
+    const reportData = calculatePercentage(membros, field);
+
+    for (const [key, value] of Object.entries(reportData)) {
+        const nomes = membros.filter(m => (m[field] || 'Não informado') === key).map(m => m.Nome).join(", ");
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${key}</td>
+            <td>${value.count}</td>
+            <td>${value.percentage}%</td>
+            <td>${nomes}</td>
+        `;
+        relatorioBody.appendChild(row);
+    }
+}
+
 </body>
 </html>
