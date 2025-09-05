@@ -357,6 +357,7 @@
                                         <option value="">Todos os status</option>
                                         <option value="Ativo">Ativo</option>
                                         <option value="Inativo">Inativo</option>
+                                        <option value="Falecido">Falecido</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3 mb-2">
@@ -499,12 +500,12 @@
                                     <thead class="table-dark">
                                         <tr>
                                             <th>Nm_Membro</th>
+                                            <th>Status</th>
                                             <th>Sexo</th>
                                             <th>Membro</th>
                                             <th>Batizado</th>
-                                            <th>Data_Nasc</th>
-                                            <th>CPF</th>
-                                            <th>Naturalidade</th>
+                                            <th>Celular</th>
+                                            <th>Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody id="previewTableBody">
@@ -545,6 +546,16 @@
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
+                                <label for="Status" class="form-label required">Status</label>
+                                <select class="form-select" id="Status" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Ativo">Ativo</option>
+                                    <option value="Inativo">Inativo</option>
+                                    <option value="Falecido">Falecido</option>
+                                </select>
+                                <div class="invalid-feedback">Por favor, selecione o status.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label for="Sexo" class="form-label required">Sexo</label>
                                 <select class="form-select" id="Sexo" required>
                                     <option value="">Selecione...</option>
@@ -553,6 +564,9 @@
                                 </select>
                                 <div class="invalid-feedback">Por favor, selecione o sexo.</div>
                             </div>
+                        </div>
+                        
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="Membro" class="form-label required">Membro</label>
                                 <select class="form-select" id="Membro" required>
@@ -562,9 +576,6 @@
                                 </select>
                                 <div class="invalid-feedback">Por favor, selecione se é membro.</div>
                             </div>
-                        </div>
-                        
-                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="Batizado" class="form-label required">Batizado</label>
                                 <select class="form-select" id="Batizado" required>
@@ -574,28 +585,31 @@
                                 </select>
                                 <div class="invalid-feedback">Por favor, selecione se é batizado.</div>
                             </div>
+                        </div>
+                        
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="Celular" class="form-label">Celular</label>
                                 <input type="text" class="form-control" id="Celular" placeholder="(11) 99999-9999">
                             </div>
-                        </div>
-                        
-                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="Data_Nasc" class="form-label">Data de Nascimento</label>
                                 <input type="date" class="form-control" id="Data_Nasc">
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="CPF" class="form-label">CPF</label>
-                                <input type="text" class="form-control" id="CPF" placeholder="000.000.000-00">
-                            </div>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
+                                <label for="CPF" class="form-label">CPF</label>
+                                <input type="text" class="form-control" id="CPF" placeholder="000.000.000-00">
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label for="Naturalidade" class="form-label">Naturalidade</label>
                                 <input type="text" class="form-control" id="Naturalidade">
                             </div>
+                        </div>
+                        
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="Estado_Civil" class="form-label">Estado Civil</label>
                                 <select class="form-select" id="Estado_Civil">
@@ -606,22 +620,21 @@
                                     <option value="Viúvo">Viúvo(a)</option>
                                 </select>
                             </div>
-                        </div>
-
-                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="Escolaridade" class="form-label">Escolaridade</label>
                                 <input type="text" class="form-control" id="Escolaridade">
                             </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="Profissao" class="form-label">Profissão</label>
                                 <input type="text" class="form-control" id="Profissao">
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="Nm_Conjuge" class="form-label">Nome do Cônjuge</label>
-                            <input type="text" class="form-control" id="Nm_Conjuge">
+                            <div class="col-md-6 mb-3">
+                                <label for="Nm_Conjuge" class="form-label">Nome do Cônjuge</label>
+                                <input type="text" class="form-control" id="Nm_Conjuge">
+                            </div>
                         </div>
                         
                         <div class="mb-3">
@@ -736,8 +749,7 @@
         const fieldMapping = {
             'casdastro': 'casdastro',
             'Nm_Membro': 'Nm_Membro',
-            'Se_Pai': 'Se_Pai', // Mapeamento temporário para o CSV
-            'Se_Mae': 'Se_Mae', // Mapeamento temporário para o CSV
+            'Status': 'Status',
             'Tem_Filhos': 'Tem_Filhos',
             'Sexo': 'Sexo',
             'Membro': 'Membro',
@@ -893,6 +905,13 @@
                             if (memberData.Membro) memberData.Membro = normalizeYesNo(memberData.Membro);
                             if (memberData.Batizado) memberData.Batizado = normalizeYesNo(memberData.Batizado);
 
+                            // Adiciona o campo de status
+                            if(row.Status) {
+                                memberData.Status = normalizeStatus(row.Status);
+                            } else {
+                                memberData.Status = 'Ativo';
+                            }
+
                             // Formatar data se existir
                             if (memberData.Data_Nasc) {
                                 memberData.Data_Nasc = formatarData(memberData.Data_Nasc);
@@ -903,9 +922,6 @@
                                 memberData.CPF = formatarCPF(memberData.CPF.toString());
                             }
                             
-                            // Define o status padrão (para o dashboard)
-                            memberData.Status = 'Ativo';
-
                             return memberData;
                         }).filter(membro => membro.Nm_Membro); // Remove linhas vazias
                         
@@ -976,6 +992,21 @@
             }
             if (lowerValue === 'feminino' || lowerValue === 'f') {
                 return 'Feminino';
+            }
+            return value;
+        }
+
+        // Função para normalizar valores de status
+        function normalizeStatus(value) {
+            const lowerValue = String(value).toLowerCase().trim();
+            if (lowerValue === 'ativo' || lowerValue === 'a') {
+                return 'Ativo';
+            }
+            if (lowerValue === 'inativo' || lowerValue === 'i') {
+                return 'Inativo';
+            }
+            if (lowerValue === 'falecido' || lowerValue === 'f') {
+                return 'Falecido';
             }
             return value;
         }
@@ -1061,12 +1092,12 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${membro.Nm_Membro}</td>
+                    <td><span class="badge ${membro.Status === 'Ativo' ? 'bg-success' : membro.Status === 'Inativo' ? 'bg-secondary' : 'bg-danger'}">${membro.Status}</span></td>
                     <td>${membro.Sexo}</td>
                     <td>${membro.Membro}</td>
                     <td>${membro.Batizado}</td>
-                    <td>${membro.Data_Nasc || ''}</td>
-                    <td>${membro.CPF || ''}</td>
-                    <td>${membro.Naturalidade || ''}</td>
+                    <td>${membro.Celular}</td>
+                    <td>${membro.Status}</td>
                 `;
                 previewBody.appendChild(row);
             });
@@ -1100,7 +1131,8 @@
             // Dados para gráfico de status (manter o status para o dashboard)
             const statusCounts = {
                 'Ativo': membros.filter(m => m.Status === 'Ativo').length,
-                'Inativo': membros.filter(m => m.Status === 'Inativo').length
+                'Inativo': membros.filter(m => m.Status === 'Inativo').length,
+                'Falecido': membros.filter(m => m.Status === 'Falecido').length
             };
             
             // Dados para gráfico de sexo
@@ -1122,11 +1154,11 @@
             statusChart = new Chart(statusCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Ativo', 'Inativo'],
+                    labels: ['Ativo', 'Inativo', 'Falecido'],
                     datasets: [{
-                        data: [statusCounts.Ativo, statusCounts.Inativo],
-                        backgroundColor: ['#4e73df', '#858796'],
-                        hoverBackgroundColor: ['#2e59d9', '#60616f'],
+                        data: [statusCounts.Ativo, statusCounts.Inativo, statusCounts.Falecido],
+                        backgroundColor: ['#4e73df', '#858796', '#e74a3b'],
+                        hoverBackgroundColor: ['#2e59d9', '#60616f', '#e74a3b'],
                         hoverBorderColor: "rgba(234, 236, 244, 1)",
                     }]
                 },
@@ -1191,9 +1223,10 @@
             // Preencher tabela
             paginatedMembros.forEach(membro => {
                 const row = document.createElement('tr');
+                const statusColor = membro.Status === 'Ativo' ? 'bg-success' : (membro.Status === 'Inativo' ? 'bg-secondary' : 'bg-danger');
                 row.innerHTML = `
                     <td>${membro.Nm_Membro}</td>
-                    <td><span class="badge ${membro.Status === 'Ativo' ? 'bg-success' : 'bg-secondary'}">${membro.Status}</span></td>
+                    <td><span class="badge ${statusColor}">${membro.Status}</span></td>
                     <td>${membro.Sexo}</td>
                     <td>${membro.Membro}</td>
                     <td>${membro.Batizado}</td>
@@ -1293,6 +1326,7 @@
             document.getElementById('membroId').value = memberId;
             document.getElementById('casdastro').value = membro.casdastro;
             document.getElementById('Nm_Membro').value = membro.Nm_Membro;
+            document.getElementById('Status').value = membro.Status;
             document.getElementById('Tem_Filhos').value = membro.Tem_Filhos;
             document.getElementById('Sexo').value = membro.Sexo;
             document.getElementById('Membro').value = membro.Membro;
@@ -1335,6 +1369,7 @@
             const membroData = {
                 casdastro: document.getElementById('casdastro').value,
                 Nm_Membro: document.getElementById('Nm_Membro').value,
+                Status: document.getElementById('Status').value,
                 Tem_Filhos: document.getElementById('Tem_Filhos').value,
                 Sexo: document.getElementById('Sexo').value,
                 Membro: document.getElementById('Membro').value,
@@ -1354,8 +1389,6 @@
                 CEP: document.getElementById('CEP').value,
                 Nm_Mae: document.getElementById('Nm_Mae').value,
                 Nm_Pai: document.getElementById('Nm_Pai').value,
-                // Mantendo o campo "Status" para o dashboard
-                Status: 'Ativo'
             };
             
             if (memberId) {
@@ -1405,7 +1438,7 @@
             if (!memberToDelete) return;
             
             // Encontrar e remover o membro
-            const index = membros.findIndex(m => m.casdastro === memberId);
+            const index = membros.findIndex(m => m.casdastro === memberToDelete);
             if (index !== -1) {
                 membros.splice(index, 1);
                 
@@ -1639,7 +1672,7 @@
         function backupData() {
             // Mapeia os campos para a ordem desejada no CSV
             const headers = [
-                'casdastro', 'Nm_Membro', 'Tem_Filhos', 'Sexo', 'Membro', 'Batizado', 'Celular', 'Data_Nasc', 'CPF',
+                'casdastro', 'Nm_Membro', 'Status', 'Tem_Filhos', 'Sexo', 'Membro', 'Batizado', 'Celular', 'Data_Nasc', 'CPF',
                 'Naturalidade', 'Estado_Civil', 'Escolaridade', 'Profissao', 'Nm_Conjuge', 'Endereco', 'Comp_Endereco',
                 'Bairro', 'Cidade', 'CEP', 'Nm_Mae', 'Nm_Pai'
             ];
