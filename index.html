@@ -18,226 +18,1617 @@
             --danger-color: #e74a3b;
             --light-bg: #f8f9fc;
         }
-        body { background-color: var(--light-bg); font-family: 'Nunito', Roboto, sans-serif; }
-        .sidebar { min-height: 100vh; background: linear-gradient(180deg, var(--primary-color) 10%, #224abe 100%); }
-        .sidebar-heading { padding: 20px 0; color: white; text-align: center; font-weight: 800; }
-        .nav-link { color: rgba(255,255,255,0.8); padding: 1rem; font-weight: 600; }
-        .nav-link:hover, .nav-link.active { color: white; background-color: rgba(255,255,255,0.1); }
-        .main-content { margin-left: 220px; padding: 20px; width: calc(100% - 220px); }
-        .card-dashboard { border: none; border-radius: 10px; box-shadow: 0 0.15rem 1.75rem 0 rgba(58,59,69,.15); }
-        .table-responsive { max-height: 500px; border-radius: 10px; }
-        @media (max-width:768px){ .sidebar{width:100%; position:relative;} .main-content{margin-left:0;width:100%;} }
+        
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, var(--primary-color) 10%, #224abe 100%);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            z-index: 100;
+        }
+        
+        .sidebar-heading {
+            padding: 20px 0;
+            color: white;
+            text-align: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 1rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            margin-left: 220px;
+            padding: 20px;
+            width: calc(100% - 220px);
+        }
+        
+        .card-dashboard {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            transition: transform 0.2s;
+        }
+        
+        .card-dashboard:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #e3e6f0;
+            font-weight: 700;
+        }
+        
+        .table-responsive {
+            max-height: 500px;
+            border-radius: 10px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        }
+        
+        #chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+        
+        .bg-success {
+            background-color: var(--success-color) !important;
+        }
+        
+        .bg-info {
+            background-color: var(--info-color) !important;
+        }
+        
+        .bg-warning {
+            background-color: var(--warning-color) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #3a5fc8;
+            border-color: #3a5fc8;
+        }
+        
+        .form-label.required::after {
+            content: " *";
+            color: #e74a3b;
+        }
+        
+        .invalid-feedback {
+            display: none;
+            color: #e74a3b;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .was-validated .form-control:invalid, .form-control.is-invalid {
+            border-color: #e74a3b;
+        }
+        
+        .was-validated .form-control:invalid ~ .invalid-feedback, 
+        .form-control.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+        
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                min-height: auto;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            display: none;
+        }
     </style>
 </head>
 <body>
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 sidebar px-0">
-            <div class="sidebar-heading">Dashboard Membros</div>
-            <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link active" href="#" data-bs-target="dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" data-bs-target="membros"><i class="bi bi-people-fill"></i> Gerenciar Membros</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" data-bs-target="relatorios"><i class="bi bi-bar-chart-fill"></i> Relatórios</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" data-bs-target="importar"><i class="bi bi-upload"></i> Importar CSV</a></li>
-                <li class="nav-item mt-4"><a class="nav-link" href="#" id="backupBtn"><i class="bi bi-cloud-arrow-down"></i> Backup</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" id="restoreBtn"><i class="bi bi-cloud-arrow-up"></i> Restaurar</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="col-md-9 col-lg-10 main-content">
-            <!-- Dashboard Section -->
-            <div class="content-section" id="dashboard-section">
-                <h2 class="mb-4">Dashboard</h2>
-                <div class="row mb-4">
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card card-dashboard border-left-primary h-100 py-2">
-                            <div class="card-body d-flex justify-content-between">
-                                <div>
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total de Membros</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-membros">0</div>
-                                </div>
-                                <i class="bi bi-people-fill fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card card-dashboard border-left-success h-100 py-2">
-                            <div class="card-body d-flex justify-content-between">
-                                <div>
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Membros Ativos</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="ativos">0</div>
-                                </div>
-                                <i class="bi bi-check-circle fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card card-dashboard border-left-info h-100 py-2">
-                            <div class="card-body d-flex justify-content-between">
-                                <div>
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Membros Batizados</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="batizados">0</div>
-                                </div>
-                                <i class="bi bi-droplet fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card card-dashboard border-left-warning h-100 py-2">
-                            <div class="card-body d-flex justify-content-between">
-                                <div>
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Aniversariantes</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="aniversariantes">0</div>
-                                </div>
-                                <i class="bi bi-gift fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar px-0">
+                <div class="sidebar-heading">Dashboard Membros</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" data-bs-target="dashboard">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-target="membros">
+                            <i class="bi bi-people-fill"></i> Gerenciar Membros
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-target="relatorios">
+                            <i class="bi bi-bar-chart-fill"></i> Relatórios
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-target="importar">
+                            <i class="bi bi-upload"></i> Importar CSV
+                        </a>
+                    </li>
+                    <li class="nav-item mt-4">
+                        <a class="nav-link" href="#" id="backupBtn">
+                            <i class="bi bi-cloud-arrow-down"></i> Backup
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="restoreBtn">
+                            <i class="bi bi-cloud-arrow-up"></i> Restaurar
+                        </a>
+                    </li>
+                </ul>
             </div>
 
-            <!-- Gerenciar Membros Section -->
-            <div class="content-section d-none" id="membros-section">
-                <h2>Gerenciar Membros</h2>
-                <div class="card card-dashboard mt-3">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead class="table-dark">
-                                    <tr><th>Nome</th><th>Status</th><th>Sexo</th><th>Membro</th><th>Batizado</th><th>Celular</th><th>Ações</th></tr>
-                                </thead>
-                                <tbody id="membrosTableBody"></tbody>
-                            </table>
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Dashboard Section -->
+                <div class="content-section" id="dashboard-section">
+                    <h2 class="mb-4">Dashboard</h2>
+                    
+                    <div class="row mb-4">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card card-dashboard border-left-primary h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Total de Membros</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-membros">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="bi bi-people-fill fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <nav aria-label="Page navigation" class="mt-3">
-                            <ul class="pagination justify-content-center" id="pagination"></ul>
-                        </nav>
+                        
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card card-dashboard border-left-success h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Membros Ativos</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="ativos">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="bi bi-check-circle fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card card-dashboard border-left-info h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                Membros Batizados</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="batizados">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="bi bi-droplet fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card card-dashboard border-left-warning h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Aniversariantes</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="aniversariantes">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="bi bi-gift fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card card-dashboard">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Status dos Membros</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="chart-container">
+                                        <canvas id="statusChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6 mb-4">
+                            <div class="card card-dashboard">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Distribuição por Sexo</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="chart-container">
+                                        <canvas id="sexoChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Relatórios Section -->
-            <div class="content-section d-none" id="relatorios-section">
-                <h2 class="mb-4">Relatórios</h2>
-                <div class="card card-dashboard mb-4">
-                    <div class="card-body row">
-                        <div class="col-md-4 mb-2">
-                            <select class="form-select" id="relatorioTipo">
-                                <option value="status">Por Status</option>
-                                <option value="sexo">Por Sexo</option>
-                                <option value="batismo">Por Batismo</option>
-                                <option value="estadoCivil">Por Estado Civil</option>
-                                <option value="membro">Por Tipo de Membro</option>
-                                <option value="aniversariantes">Aniversariantes</option>
-                            </select>
+                <!-- Gerenciar Membros Section -->
+                <div class="content-section d-none" id="membros-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Gerenciar Membros</h2>
+                        <div>
+                            <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#adicionarMembroModal">
+                                <i class="bi bi-plus-circle me-1"></i> Adicionar Membro
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="addSampleData()">
+                                <i class="bi bi-lightning me-1"></i> Dados de Exemplo
+                            </button>
                         </div>
-                        <div class="col-md-4 mb-2"><button class="btn btn-primary w-100" id="gerarRelatorioBtn">Gerar Relatório</button></div>
-                        <div class="col-md-4 mb-2"><button class="btn btn-success w-100" id="exportarRelatorioBtn">Exportar para CSV</button></div>
+                    </div>
+                    
+                    <div class="card card-dashboard mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Buscar membro...">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <select class="form-select" id="statusFilter">
+                                        <option value="">Todos os status</option>
+                                        <option value="Ativo">Ativo</option>
+                                        <option value="Inativo">Inativo</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <select class="form-select" id="membroFilter">
+                                        <option value="">Todos os tipos</option>
+                                        <option value="Sim">Membro</option>
+                                        <option value="Não">Não membro</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card card-dashboard">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Status</th>
+                                            <th>Sexo</th>
+                                            <th>Membro</th>
+                                            <th>Batizado</th>
+                                            <th>Celular</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="membrosTableBody">
+                                        <!-- Os dados serão preenchidos via JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <nav aria-label="Page navigation" class="mt-3">
+                                <ul class="pagination justify-content-center" id="pagination">
+                                    <!-- Paginação será gerada via JavaScript -->
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
-                <div class="card card-dashboard">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead class="table-dark"><tr id="relatorioHeader"></tr></thead>
-                                <tbody id="relatorioBody"></tbody>
-                            </table>
+
+                <!-- Relatórios Section -->
+                <div class="content-section d-none" id="relatorios-section">
+                    <h2 class="mb-4">Relatórios</h2>
+                    
+                    <div class="card card-dashboard mb-4">
+                        <div class="card-header py-3">
+                            <h5 class="m-0 font-weight-bold text-primary">Gerar Relatório</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <select class="form-select" id="relatorioTipo">
+                                        <option value="status">Por Status</option>
+                                        <option value="sexo">Por Sexo</option>
+                                        <option value="batismo">Por Batismo</option>
+                                        <option value="estadoCivil">Por Estado Civil</option>
+                                        <option value="membro">Por Tipo de Membro</option>
+                                        <option value="aniversariantes">Aniversariantes</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <button class="btn btn-primary w-100" id="gerarRelatorioBtn">Gerar Relatório</button>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <button class="btn btn-success w-100" id="exportarRelatorioBtn">Exportar para CSV</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card card-dashboard">
+                        <div class="card-header py-3">
+                            <h5 class="m-0 font-weight-bold text-primary">Resultado do Relatório</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead class="table-dark">
+                                        <tr id="relatorioHeader">
+                                            <!-- Cabeçalho será gerado via JavaScript -->
+                                        </tr>
+                                    </thead>
+                                    <tbody id="relatorioBody">
+                                        <!-- Dados do relatório serão preenchidos via JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Importar CSV Section -->
+                <div class="content-section d-none" id="importar-section">
+                    <h2 class="mb-4">Importar Dados de CSV</h2>
+                    
+                    <div class="card card-dashboard mb-4">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="csvFile" class="form-label">Selecione o arquivo CSV</label>
+                                <input class="form-control" type="file" id="csvFile" accept=".csv">
+                            </div>
+                            <button class="btn btn-primary" id="importCsvBtn">Importar CSV</button>
+                            <button class="btn btn-secondary ms-2" id="clearCsvBtn">Limpar</button>
+                            <button class="btn btn-info ms-2" onclick="downloadCSVTemplate()">
+                                <i class="bi bi-download me-1"></i> Baixar Modelo CSV
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Barra de progresso e status -->
+                    <div class="card card-dashboard mb-4 d-none" id="importStatusCard">
+                        <div class="card-header py-3">
+                            <h5 class="m-0 font-weight-bold text-primary">Status da Importação</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="progress mb-3" style="height: 20px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%" 
+                                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="importProgress">
+                                    0%
+                                </div>
+                            </div>
+                            <div id="importStatusText">Preparando importação...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Debug info -->
+                    <div class="debug-info" id="debugInfo">
+                        <h6>Informações de Debug:</h6>
+                        <div id="debugContent"></div>
+                    </div>
+                    
+                    <div class="card card-dashboard">
+                        <div class="card-header py-3">
+                            <h5 class="m-0 font-weight-bold text-primary">Visualização Prévia dos Dados</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Status</th>
+                                            <th>Sexo</th>
+                                            <th>Membro</th>
+                                            <th>Batizado</th>
+                                            <th>Data Nasc.</th>
+                                            <th>CPF</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="previewTableBody">
+                                        <!-- Visualização prévia será preenchida via JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-let membros = [];
-let currentPage = 1;
-const itemsPerPage = 10;
+    <!-- Modal para Adicionar/Editar Membro -->
+    <div class="modal fade" id="adicionarMembroModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Adicionar Novo Membro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="membroForm" class="needs-validation" novalidate>
+                        <input type="hidden" id="membroId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nome" class="form-label required">Nome</label>
+                                <input type="text" class="form-control" id="nome" required>
+                                <div class="invalid-feedback">Por favor, informe o nome.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="status" class="form-label required">Status</label>
+                                <select class="form-select" id="status" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Ativo">Ativo</option>
+                                    <option value="Inativo">Inativo</option>
+                                </select>
+                                <div class="invalid-feedback">Por favor, selecione o status.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="sexo" class="form-label required">Sexo</label>
+                                <select class="form-select" id="sexo" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Feminino">Feminino</option>
+                                </select>
+                                <div class="invalid-feedback">Por favor, selecione o sexo.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="membro" class="form-label required">Membro</label>
+                                <select class="form-select" id="membro" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                                <div class="invalid-feedback">Por favor, selecione se é membro.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="batizado" class="form-label required">Batizado</label>
+                                <select class="form-select" id="batizado" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                                <div class="invalid-feedback">Por favor, selecione se é batizado.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="celular" class="form-label">Celular</label>
+                                <input type="text" class="form-control" id="celular" placeholder="(11) 99999-9999">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="dataNasc" class="form-label">Data de Nascimento</label>
+                                <input type="date" class="form-control" id="dataNasc">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="estadoCivil" class="form-label">Estado Civil</label>
+                                <select class="form-select" id="estadoCivil">
+                                    <option value="">Selecione...</option>
+                                    <option value="Solteiro">Solteiro(a)</option>
+                                    <option value="Casado">Casado(a)</option>
+                                    <option value="Divorciado">Divorciado(a)</option>
+                                    <option value="Viúvo">Viúvo(a)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="cpf" class="form-label">CPF</label>
+                                <input type="text" class="form-control" id="cpf" placeholder="000.000.000-00">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="rg" class="form-label">RG</label>
+                                <input type="text" class="form-control" id="rg" placeholder="00.000.000-0">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="endereco" class="form-label">Endereço</label>
+                            <input type="text" class="form-control" id="endereco" placeholder="Rua, número, complemento">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="bairro" class="form-label">Bairro</label>
+                                <input type="text" class="form-control" id="bairro">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="cidade" class="form-label">Cidade</label>
+                                <input type="text" class="form-control" id="cidade">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="mae" class="form-label">Nome da Mãe</label>
+                                <input type="text" class="form-control" id="mae">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="pai" class="form-label">Nome do Pai</label>
+                                <input type="text" class="form-control" id="pai">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveMembroBtn">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-// Função de relatório (corrigida e expandida)
-function generateReport() {
-    const reportType = document.getElementById('relatorioTipo').value;
-    const relatorioHeader = document.getElementById('relatorioHeader');
-    const relatorioBody = document.getElementById('relatorioBody');
-    relatorioHeader.innerHTML = ''; relatorioBody.innerHTML = '';
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir este membro?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    let headers = [];
+    <!-- Modal de Sucesso -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Sucesso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="successMessage">Operação realizada com sucesso!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    if (reportType === 'aniversariantes') {
-        const mes = prompt("Digite o número do mês (1-12):");
-        if (!mes || isNaN(mes) || mes < 1 || mes > 12) { alert("Mês inválido."); return; }
-        headers = ['Nome','Data de Nascimento'];
-        headers.forEach(h => { const th=document.createElement('th'); th.textContent=h; relatorioHeader.appendChild(th); });
-        const aniversariantes = membros.filter(m=> m.DataNasc && (new Date(m.DataNasc).getMonth()+1)==mes);
-        aniversariantes.forEach(m=>{
-            const row=document.createElement('tr');
-            row.innerHTML=`<td>${m.Nome}</td><td>${m.DataNasc}</td>`;
-            relatorioBody.appendChild(row);
+    <!-- Input oculto para restaurar backup -->
+    <input type="file" id="restoreFile" accept=".json" style="display: none;">
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variáveis globais
+        let membros = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let memberToDelete = null;
+        let statusChart, sexoChart;
+
+        // Inicialização quando o documento estiver pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
         });
-        return;
-    }
 
-    let field;
-    switch(reportType){
-        case 'status': headers=['Status','Quantidade','Percentual','Nomes']; field='Status'; break;
-        case 'sexo': headers=['Sexo','Quantidade','Percentual','Nomes']; field='Sexo'; break;
-        case 'batismo': headers=['Batizado','Quantidade','Percentual','Nomes']; field='Batizado'; break;
-        case 'estadoCivil': headers=['Estado Civil','Quantidade','Percentual','Nomes']; field='EstadoCivil'; break;
-        case 'membro': headers=['Tipo de Membro','Quantidade','Percentual','Nomes']; field='Membro'; break;
-    }
-    headers.forEach(h => { const th=document.createElement('th'); th.textContent=h; relatorioHeader.appendChild(th); });
-    const reportData = calculatePercentage(membros, field);
-    for(const [key,val] of Object.entries(reportData)){
-        const nomes = membros.filter(m=>(m[field]||'Não informado')===key).map(m=>m.Nome).join(", ");
-        const row=document.createElement('tr');
-        row.innerHTML=`<td>${key}</td><td>${val.count}</td><td>${val.percentage}%</td><td>${nomes}</td>`;
-        relatorioBody.appendChild(row);
-    }
-}
+        function initializeApp() {
+            // Carregar dados do localStorage se existirem
+            const savedData = localStorage.getItem('membrosData');
+            if (savedData) {
+                try {
+                    membros = JSON.parse(savedData);
+                    updateDashboard();
+                    renderMembrosTable();
+                } catch (e) {
+                    console.error('Erro ao carregar dados:', e);
+                    membros = [];
+                }
+            }
 
-function calculatePercentage(data, field){
-    const counts={}; data.forEach(item=>{ const v=item[field]||'Não informado'; counts[v]=(counts[v]||0)+1; });
-    const total=data.length; const res={};
-    for(const [k,c] of Object.entries(counts)){ res[k]={count:c,percentage:((c/total)*100).toFixed(2)}; }
-    return res;
-}
+            // Configurar navegação
+            setupNavigation();
 
-// Exportar relatório (com nomes incluídos)
-function exportReport() {
-    const reportType = document.getElementById('relatorioTipo').value;
+            // Configurar eventos
+            setupEventListeners();
+        }
 
-    if (reportType === 'aniversariantes') {
-        const mes = prompt("Digite o número do mês (1-12):");
-        if (!mes || isNaN(mes) || mes < 1 || mes > 12) { alert("Mês inválido."); return; }
-        const aniversariantes = membros.filter(m=> m.DataNasc && (new Date(m.DataNasc).getMonth()+1)==mes);
-        let csv = 'Nome,Data de Nascimento\\n';
-        aniversariantes.forEach(m=>{ csv += `"${m.Nome}","${m.DataNasc}"\\n`; });
-        const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-        const link=document.createElement('a'); link.href=URL.createObjectURL(blob);
-        link.download=`relatorio_aniversariantes_mes_${mes}.csv`; link.click(); return;
-    }
+        function setupNavigation() {
+            // Navegação do menu lateral
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = this.getAttribute('data-bs-target');
+                    
+                    // Ativar link clicado e desativar outros
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Mostrar seção correspondente e esconder outras
+                    document.querySelectorAll('.content-section').forEach(section => {
+                        section.classList.add('d-none');
+                    });
+                    document.getElementById(`${target}-section`).classList.remove('d-none');
+                });
+            });
+        }
 
-    let field; switch(reportType){
-        case 'status': field='Status'; break;
-        case 'sexo': field='Sexo'; break;
-        case 'batismo': field='Batizado'; break;
-        case 'estadoCivil': field='EstadoCivil'; break;
-        case 'membro': field='Membro'; break;
-    }
-    const reportData=calculatePercentage(membros,field);
-    let csv='Categoria,Quantidade,Percentual,Nomes\\n';
-    for(const [key,val] of Object.entries(reportData)){
-        const nomes=membros.filter(m=>(m[field]||'Não informado')===key).map(m=>m.Nome).join("; ");
-        csv+=`"${key}",${val.count},${val.percentage}%,"${nomes}"\\n`;
-    }
-    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-    const link=document.createElement('a'); link.href=URL.createObjectURL(blob);
-    link.download=`relatorio_${reportType}.csv`; link.click();
-}
-</script>
+        function setupEventListeners() {
+            // Importar CSV
+            document.getElementById('importCsvBtn').addEventListener('click', importCSV);
+            document.getElementById('clearCsvBtn').addEventListener('click', clearCSV);
+            
+            // Buscar membros
+            document.getElementById('searchInput').addEventListener('input', renderMembrosTable);
+            document.getElementById('statusFilter').addEventListener('change', renderMembrosTable);
+            document.getElementById('membroFilter').addEventListener('change', renderMembrosTable);
+            
+            // Salvar membro
+            document.getElementById('saveMembroBtn').addEventListener('click', saveMembro);
+            
+            // Gerar relatório
+            document.getElementById('gerarRelatorioBtn').addEventListener('click', generateReport);
+            document.getElementById('exportarRelatorioBtn').addEventListener('click', exportReport);
+            
+            // Confirmação de exclusão
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+            
+            // Backup e restauração
+            document.getElementById('backupBtn').addEventListener('click', backupData);
+            document.getElementById('restoreBtn').addEventListener('click', triggerRestore);
+            document.getElementById('restoreFile').addEventListener('change', restoreData);
+        }
+
+        function importCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Por favor, selecione um arquivo CSV.');
+                return;
+            }
+            
+            // Mostrar barra de progresso
+            const statusCard = document.getElementById('importStatusCard');
+            const progressBar = document.getElementById('importProgress');
+            const statusText = document.getElementById('importStatusText');
+            
+            statusCard.classList.remove('d-none');
+            progressBar.style.width = '10%';
+            progressBar.textContent = '10%';
+            statusText.textContent = 'Iniciando importação...';
+
+            // Primeiro, fazer debug do arquivo
+            debugCSV(file);
+
+            // Configurações robustas para o PapaParse
+            Papa.parse(file, {
+                header: true,
+                delimiter: ',', // Força vírgula como delimitador
+                newline: '\n',
+                encoding: 'UTF-8',
+                skipEmptyLines: true,
+                transformHeader: function(header) {
+                    // Normaliza os cabeçalhos
+                    return header.trim().toLowerCase().replace(/\s+/g, '');
+                },
+                complete: function(results) {
+                    console.log('Resultado completo do parsing:', results);
+                    
+                    if (results.data && results.data.length > 0) {
+                        // Atualizar progresso
+                        progressBar.style.width = '100%';
+                        progressBar.textContent = '100%';
+                        statusText.textContent = 'Processamento concluído!';
+                        
+                        // Processar dados
+                        const novosMembros = results.data.map((row, index) => {
+                            // Formatar data se existir
+                            let dataNascFormatada = '';
+                            const dataOriginal = row.datanasc || row.datanascimento || row['datanasc'] || '';
+                            if (dataOriginal) {
+                                dataNascFormatada = formatarData(dataOriginal);
+                            }
+                            
+                            // Formatar CPF se existir
+                            let cpfFormatado = '';
+                            if (row.cpf) {
+                                cpfFormatado = formatarCPF(row.cpf.toString());
+                            }
+                            
+                            return {
+                                Nome: row.nome || `Membro ${index + 1}`,
+                                Status: row.status || 'Ativo',
+                                Sexo: row.sexo || 'Masculino',
+                                Membro: row.membro || 'Sim',
+                                Batizado: row.batizado || 'Não',
+                                Celular: row.celular || row.telefone || '',
+                                DataNasc: dataNascFormatada,
+                                RG: row.rg || '',
+                                CPF: cpfFormatado,
+                                EstadoCivil: row.estadocivil || row.estado_civil || '',
+                                Endereco: row.endereço || row.endereco || '',
+                                Bairro: row.bairro || '',
+                                Cidade: row.cidade || '',
+                                Mae: row.nomedamãe || row.nomedamae || row.mae || '',
+                                Pai: row.nomedopai || row.pai || ''
+                            };
+                        }).filter(membro => membro.Nome && membro.Nome !== 'Membro'); // Remove linhas vazias
+                        
+                        console.log('Membros processados:', novosMembros);
+                        
+                        if (novosMembros.length > 0) {
+                            membros = novosMembros;
+                            
+                            // Salvar no localStorage
+                            localStorage.setItem('membrosData', JSON.stringify(membros));
+                            
+                            // Atualizar a interface
+                            updateDashboard();
+                            renderMembrosTable();
+                            
+                            // Mostrar preview
+                            showPreview();
+                            
+                            // Mostrar mensagem de sucesso
+                            showSuccessModal('Importação concluída com sucesso! ' + membros.length + ' registros processados.');
+                        } else {
+                            alert('Nenhum dado válido encontrado no arquivo.');
+                        }
+                        
+                    } else {
+                        let errorMsg = 'O arquivo CSV está vazio ou não pôde ser processado.';
+                        if (results.errors && results.errors.length) {
+                            errorMsg += '\nErros: ' + results.errors.map(e => e.message).join(', ');
+                        }
+                        alert(errorMsg);
+                        console.error('Erros do PapaParse:', results.errors);
+                    }
+                    
+                    // Esconder barra de progresso após 2 segundos
+                    setTimeout(() => {
+                        statusCard.classList.add('d-none');
+                    }, 2000);
+                    
+                    // Limpar o input
+                    fileInput.value = '';
+                },
+                error: function(error) {
+                    console.error('Erro ao processar CSV:', error);
+                    alert('Erro ao processar o arquivo CSV: ' + error.message);
+                    fileInput.value = '';
+                    statusCard.classList.add('d-none');
+                }
+            });
+        }
+
+        function debugCSV(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                console.log('Conteúdo bruto do arquivo:');
+                console.log(content);
+                
+                // Mostrar informações de debug na interface
+                const debugInfo = document.getElementById('debugInfo');
+                const debugContent = document.getElementById('debugContent');
+                
+                debugInfo.style.display = 'block';
+                debugContent.innerHTML = `
+                    <p><strong>Primeiras 5 linhas:</strong></p>
+                    <pre>${content.split('\n').slice(0, 5).join('\n')}</pre>
+                    <p><strong>Tamanho do arquivo:</strong> ${content.length} caracteres</p>
+                    <p><strong>Número de linhas:</strong> ${content.split('\n').length}</p>
+                `;
+            };
+            reader.readAsText(file);
+        }
+
+        function formatarData(data) {
+            if (!data) return '';
+            
+            // Se já estiver no formato YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+                return data;
+            }
+            
+            // Se estiver no formato DD/MM/YYYY
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
+                const partes = data.split('/');
+                return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+            }
+            
+            // Se for uma data válida
+            try {
+                const dataObj = new Date(data);
+                if (!isNaN(dataObj.getTime())) {
+                    return dataObj.toISOString().split('T')[0];
+                }
+            } catch (e) {
+                console.error('Erro ao formatar data:', e);
+            }
+            
+            return data; // Retorna original se não conseguir formatar
+        }
+
+        function formatarCPF(cpf) {
+            if (!cpf) return '';
+            
+            // Remove caracteres não numéricos
+            cpf = cpf.toString().replace(/\D/g, '');
+            
+            // Formata no padrão 000.000.000-00
+            if (cpf.length === 11) {
+                return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            }
+            
+            return cpf; // Retorna original se não tiver 11 dígitos
+        }
+
+        function clearCSV() {
+            document.getElementById('csvFile').value = '';
+            document.getElementById('previewTableBody').innerHTML = '';
+            document.getElementById('importStatusCard').classList.add('d-none');
+            document.getElementById('debugInfo').style.display = 'none';
+        }
+
+        function downloadCSVTemplate() {
+            const csvContent = `nome,status,sexo,membro,batizado,datanasc,cpf,celular,estadocivil,rg,endereco,bairro,cidade,mae,pai
+João Silva,Ativo,Masculino,Sim,Sim,15/03/1985,12345678901,11999998888,Casado,12345678,Rua das Flores 123,Centro,São Paulo,Maria Silva,José Silva
+Maria Santos,Ativo,Feminino,Sim,Sim,22/07/1990,98765432100,11988887777,Solteiro,87654321,Av. Paulista 456,Bela Vista,São Paulo,Ana Santos,Carlos Santos
+Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Divorciado,45678912,Rua Augusta 789,Consolação,São Paulo,Clara Oliveira,Paulo Oliveira`;
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'modelo_membros.csv');
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function addSampleData() {
+            const sampleData = [
+                {
+                    Nome: "João Silva",
+                    Status: "Ativo",
+                    Sexo: "Masculino",
+                    Membro: "Sim",
+                    Batizado: "Sim",
+                    Celular: "(11) 99999-8888",
+                    DataNasc: "1985-03-15",
+                    CPF: "123.456.789-01",
+                    RG: "12.345.678-9",
+                    EstadoCivil: "Casado",
+                    Endereco: "Rua das Flores, 123",
+                    Bairro: "Centro",
+                    Cidade: "São Paulo",
+                    Mae: "Maria Silva",
+                    Pai: "José Silva"
+                },
+                {
+                    Nome: "Maria Santos",
+                    Status: "Ativo",
+                    Sexo: "Feminino",
+                    Membro: "Sim",
+                    Batizado: "Não",
+                    Celular: "(11) 88888-7777",
+                    DataNasc: "1990-07-22",
+                    CPF: "987.654.321-00",
+                    RG: "87.654.321-0",
+                    EstadoCivil: "Solteiro",
+                    Endereco: "Av. Paulista, 456",
+                    Bairro: "Bela Vista",
+                    Cidade: "São Paulo",
+                    Mae: "Ana Santos",
+                    Pai: "Carlos Santos"
+                }
+            ];
+
+            membros = [...membros, ...sampleData];
+            localStorage.setItem('membrosData', JSON.stringify(membros));
+            
+            updateDashboard();
+            renderMembrosTable();
+            showSuccessModal('Dados de exemplo adicionados com sucesso!');
+        }
+
+        function showPreview() {
+            const previewBody = document.getElementById('previewTableBody');
+            previewBody.innerHTML = '';
+            
+            // Mostrar apenas os primeiros 5 registros para preview
+            const previewData = membros.slice(0, 5);
+            
+            previewData.forEach(membro => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${membro.Nome}</td>
+                    <td>${membro.Status}</td>
+                    <td>${membro.Sexo}</td>
+                    <td>${membro.Membro}</td>
+                    <td>${membro.Batizado}</td>
+                    <td>${membro.DataNasc || ''}</td>
+                    <td>${membro.CPF || ''}</td>
+                `;
+                previewBody.appendChild(row);
+            });
+        }
+
+        function updateDashboard() {
+            // Atualizar estatísticas
+            document.getElementById('total-membros').textContent = membros.length;
+            
+            const ativos = membros.filter(m => m.Status === 'Ativo').length;
+            document.getElementById('ativos').textContent = ativos;
+            
+            const batizados = membros.filter(m => m.Batizado === 'Sim').length;
+            document.getElementById('batizados').textContent = batizados;
+            
+            // Calcular aniversariantes do mês atual
+            const hoje = new Date();
+            const mesAtual = hoje.getMonth() + 1;
+            const aniversariantes = membros.filter(m => {
+                if (!m.DataNasc) return false;
+                const dataNasc = new Date(m.DataNasc);
+                return dataNasc.getMonth() + 1 === mesAtual;
+            }).length;
+            document.getElementById('aniversariantes').textContent = aniversariantes;
+            
+            // Atualizar gráficos
+            updateCharts();
+        }
+
+        function updateCharts() {
+            // Dados para gráfico de status
+            const statusCounts = {
+                'Ativo': membros.filter(m => m.Status === 'Ativo').length,
+                'Inativo': membros.filter(m => m.Status === 'Inativo').length
+            };
+            
+            // Dados para gráfico de sexo
+            const sexoCounts = {
+                'Masculino': membros.filter(m => m.Sexo === 'Masculino').length,
+                'Feminino': membros.filter(m => m.Sexo === 'Feminino').length
+            };
+            
+            // Destruir gráficos existentes se houver
+            if (statusChart) {
+                statusChart.destroy();
+            }
+            if (sexoChart) {
+                sexoChart.destroy();
+            }
+            
+            // Criar gráfico de status
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            statusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ativo', 'Inativo'],
+                    datasets: [{
+                        data: [statusCounts.Ativo, statusCounts.Inativo],
+                        backgroundColor: ['#4e73df', '#858796'],
+                        hoverBackgroundColor: ['#2e59d9', '#60616f'],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Criar gráfico de sexo
+            const sexoCtx = document.getElementById('sexoChart').getContext('2d');
+            sexoChart = new Chart(sexoCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Masculino', 'Feminino'],
+                    datasets: [{
+                        data: [sexoCounts.Masculino, sexoCounts.Feminino],
+                        backgroundColor: ['#4e73df', '#36b9cc'],
+                        hoverBackgroundColor: ['#2e59d9', '#2c9faf'],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderMembrosTable() {
+            const tableBody = document.getElementById('membrosTableBody');
+            tableBody.innerHTML = '';
+            
+            // Aplicar filtros
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const membroFilter = document.getElementById('membroFilter').value;
+            
+            let filteredMembros = membros.filter(membro => {
+                const matchesSearch = membro.Nome.toLowerCase().includes(searchTerm);
+                const matchesStatus = statusFilter === '' || membro.Status === statusFilter;
+                const matchesMembro = membroFilter === '' || membro.Membro === membroFilter;
+                
+                return matchesSearch && matchesStatus && matchesMembro;
+            });
+            
+            // Calcular paginação
+            const totalPages = Math.ceil(filteredMembros.length / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredMembros.length);
+            const paginatedMembros = filteredMembros.slice(startIndex, endIndex);
+            
+            // Preencher tabela
+            paginatedMembros.forEach(membro => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${membro.Nome}</td>
+                    <td><span class="badge ${membro.Status === 'Ativo' ? 'bg-success' : 'bg-secondary'}">${membro.Status}</span></td>
+                    <td>${membro.Sexo}</td>
+                    <td>${membro.Membro}</td>
+                    <td>${membro.Batizado}</td>
+                    <td>${membro.Celular}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary edit-btn" data-id="${membro.Nome}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${membro.Nome}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Configurar botões de edição e exclusão
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const memberId = this.getAttribute('data-id');
+                    editMembro(memberId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const memberId = this.getAttribute('data-id');
+                    showDeleteConfirm(memberId);
+                });
+            });
+            
+            // Atualizar paginação
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            if (totalPages <= 1) return;
+            
+            // Botão anterior
+            const prevLi = document.createElement('li');
+            prevLi.classList.add('page-item');
+            if (currentPage === 1) prevLi.classList.add('disabled');
+            prevLi.innerHTML = `<a class="page-link" href="#">Anterior</a>`;
+            prevLi.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderMembrosTable();
+                }
+            });
+            pagination.appendChild(prevLi);
+            
+            // Números das páginas (limitar exibidos para não poluir a UI se muitas páginas)
+            const maxPagesToShow = 7;
+            let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+            let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+            if (endPage - startPage + 1 < maxPagesToShow) {
+                startPage = Math.max(1, endPage - maxPagesToShow + 1);
+            }
+            for (let i = startPage; i <= endPage; i++) {
+                const pageLi = document.createElement('li');
+                pageLi.classList.add('page-item');
+                if (currentPage === i) pageLi.classList.add('active');
+                pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                pageLi.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentPage = i;
+                    renderMembrosTable();
+                });
+                pagination.appendChild(pageLi);
+            }
+            
+            // Botão próximo
+            const nextLi = document.createElement('li');
+            nextLi.classList.add('page-item');
+            if (currentPage === totalPages) nextLi.classList.add('disabled');
+            nextLi.innerHTML = `<a class="page-link" href="#">Próximo</a>`;
+            nextLi.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderMembrosTable();
+                }
+            });
+            pagination.appendChild(nextLi);
+        }
+
+        function editMembro(memberId) {
+            const membro = membros.find(m => m.Nome === memberId);
+            if (!membro) return;
+            
+            // Preencher o formulário com os dados do membro
+            document.getElementById('modalTitle').textContent = 'Editar Membro';
+            document.getElementById('membroId').value = memberId;
+            document.getElementById('nome').value = membro.Nome;
+            document.getElementById('status').value = membro.Status;
+            document.getElementById('sexo').value = membro.Sexo;
+            document.getElementById('membro').value = membro.Membro;
+            document.getElementById('batizado').value = membro.Batizado;
+            document.getElementById('celular').value = membro.Celular;
+            document.getElementById('dataNasc').value = membro.DataNasc;
+            document.getElementById('estadoCivil').value = membro.EstadoCivil;
+            document.getElementById('cpf').value = membro.CPF;
+            document.getElementById('rg').value = membro.RG;
+            document.getElementById('endereco').value = membro.Endereco;
+            document.getElementById('bairro').value = membro.Bairro;
+            document.getElementById('cidade').value = membro.Cidade;
+            document.getElementById('mae').value = membro.Mae;
+            document.getElementById('pai').value = membro.Pai;
+            
+            // Remover classes de validação
+            document.getElementById('membroForm').classList.remove('was-validated');
+            
+            // Abrir o modal
+            const modal = new bootstrap.Modal(document.getElementById('adicionarMembroModal'));
+            modal.show();
+        }
+
+        function saveMembro() {
+            const form = document.getElementById('membroForm');
+            
+            // Validar formulário
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            
+            // Coletar dados do formulário
+            const memberId = document.getElementById('membroId').value;
+            const membroData = {
+                Nome: document.getElementById('nome').value,
+                Status: document.getElementById('status').value,
+                Sexo: document.getElementById('sexo').value,
+                Membro: document.getElementById('membro').value,
+                Batizado: document.getElementById('batizado').value,
+                Celular: document.getElementById('celular').value,
+                DataNasc: document.getElementById('dataNasc').value,
+                EstadoCivil: document.getElementById('estadoCivil').value,
+                CPF: document.getElementById('cpf').value,
+                RG: document.getElementById('rg').value,
+                Endereco: document.getElementById('endereco').value,
+                Bairro: document.getElementById('bairro').value,
+                Cidade: document.getElementById('cidade').value,
+                Mae: document.getElementById('mae').value,
+                Pai: document.getElementById('pai').value
+            };
+            
+            if (memberId) {
+                // Editar membro existente
+                const index = membros.findIndex(m => m.Nome === memberId);
+                if (index !== -1) {
+                    membros[index] = { ...membros[index], ...membroData };
+                }
+            } else {
+                // Adicionar novo membro
+                membros.push(membroData);
+            }
+            
+            // Salvar no localStorage
+            localStorage.setItem('membrosData', JSON.stringify(membros));
+            
+            // Atualizar a interface
+            updateDashboard();
+            renderMembrosTable();
+            
+            // Fechar o modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('adicionarMembroModal'));
+            modal.hide();
+            
+            // Limpar o formulário
+            document.getElementById('membroForm').reset();
+            document.getElementById('membroId').value = '';
+            form.classList.remove('was-validated');
+            
+            // Mostrar mensagem de sucesso
+            showSuccessModal('Registro salvo com sucesso!');
+        }
+
+        function showSuccessModal(message) {
+            document.getElementById('successMessage').textContent = message;
+            const modal = new bootstrap.Modal(document.getElementById('successModal'));
+            modal.show();
+        }
+
+        function showDeleteConfirm(memberId) {
+            memberToDelete = memberId;
+            const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+            modal.show();
+        }
+
+        function confirmDelete() {
+            if (!memberToDelete) return;
+            
+            // Encontrar e remover o membro
+            const index = membros.findIndex(m => m.Nome === memberToDelete);
+            if (index !== -1) {
+                membros.splice(index, 1);
+                
+                // Salvar no localStorage
+                localStorage.setItem('membrosData', JSON.stringify(membros));
+                
+                // Atualizar a interface
+                updateDashboard();
+                renderMembrosTable();
+                
+                // Mostrar mensagem de sucesso
+                showSuccessModal('Membro excluído com sucesso!');
+            }
+            
+            // Fechar o modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
+            modal.hide();
+            
+            memberToDelete = null;
+        }
+
+        // ---------- FUNÇÃO GERAR RELATÓRIO (SUBSTITUÍDA) ----------
+        function generateReport() {
+            const reportType = document.getElementById('relatorioTipo').value;
+            const relatorioHeader = document.getElementById('relatorioHeader');
+            const relatorioBody = document.getElementById('relatorioBody');
+            
+            relatorioHeader.innerHTML = '';
+            relatorioBody.innerHTML = '';
+            
+            let headers = [];
+            
+            if (reportType === 'aniversariantes') {
+                // Pergunta o mês ao usuário
+                const mes = prompt("Digite o número do mês (1-12):");
+                if (!mes || isNaN(mes) || mes < 1 || mes > 12) {
+                    alert("Mês inválido.");
+                    return;
+                }
+
+                headers = ['Nome', 'Data de Nascimento'];
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    relatorioHeader.appendChild(th);
+                });
+
+                // ordenar aniversariantes pelo dia do mês
+                const aniversariantes = membros.filter(m => {
+                    if (!m.DataNasc) return false;
+                    const data = new Date(m.DataNasc);
+                    return (data.getMonth() + 1) == mes;
+                }).sort((a,b) => {
+                    const da = new Date(a.DataNasc).getDate();
+                    const db = new Date(b.DataNasc).getDate();
+                    return da - db;
+                });
+
+                if (aniversariantes.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="2">Nenhum aniversariante encontrado para o mês ${mes}.</td>`;
+                    relatorioBody.appendChild(row);
+                    return;
+                }
+
+                aniversariantes.forEach(m => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${m.Nome}</td>
+                        <td>${m.DataNasc}</td>
+                    `;
+                    relatorioBody.appendChild(row);
+                });
+
+                return;
+            }
+
+            // Relatórios tradicionais (nominais)
+            let field;
+            switch (reportType) {
+                case 'status':
+                    headers = ['Status', 'Quantidade', 'Percentual', 'Nomes'];
+                    field = 'Status';
+                    break;
+                case 'sexo':
+                    headers = ['Sexo', 'Quantidade', 'Percentual', 'Nomes'];
+                    field = 'Sexo';
+                    break;
+                case 'batismo':
+                    headers = ['Batizado', 'Quantidade', 'Percentual', 'Nomes'];
+                    field = 'Batizado';
+                    break;
+                case 'estadoCivil':
+                    headers = ['Estado Civil', 'Quantidade', 'Percentual', 'Nomes'];
+                    field = 'EstadoCivil';
+                    break;
+                case 'membro':
+                    headers = ['Tipo de Membro', 'Quantidade', 'Percentual', 'Nomes'];
+                    field = 'Membro';
+                    break;
+            }
+            
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                relatorioHeader.appendChild(th);
+            });
+
+            const reportData = calculatePercentage(membros, field);
+
+            for (const [key, value] of Object.entries(reportData)) {
+                const nomes = membros.filter(m => (m[field] || 'Não informado') === key).map(m => m.Nome).join(", ");
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${key}</td>
+                    <td>${value.count}</td>
+                    <td>${value.percentage}%</td>
+                    <td>${nomes}</td>
+                `;
+                relatorioBody.appendChild(row);
+            }
+        }
+
+        function calculatePercentage(data, field) {
+            const counts = {};
+            
+            // Contar ocorrências
+            data.forEach(item => {
+                const value = item[field] || 'Não informado';
+                counts[value] = (counts[value] || 0) + 1;
+            });
+            
+            // Calcular percentuais
+            const result = {};
+            const total = data.length;
+            
+            for (const [key, count] of Object.entries(counts)) {
+                result[key] = {
+                    count: count,
+                    percentage: ((count / total) * 100).toFixed(2)
+                };
+            }
+            
+            return result;
+        }
+
+        // ---------- FUNÇÃO EXPORTAR RELATÓRIO (SUBSTITUÍDA) ----------
+        function exportReport() {
+            const reportType = document.getElementById('relatorioTipo').value;
+
+            if (reportType === 'aniversariantes') {
+                const mes = prompt("Digite o número do mês (1-12):");
+                if (!mes || isNaN(mes) || mes < 1 || mes > 12) {
+                    alert("Mês inválido.");
+                    return;
+                }
+
+                // Ordenar por dia do mês antes de exportar
+                const aniversariantes = membros.filter(m => {
+                    if (!m.DataNasc) return false;
+                    const data = new Date(m.DataNasc);
+                    return (data.getMonth() + 1) == mes;
+                }).sort((a,b) => {
+                    const da = new Date(a.DataNasc).getDate();
+                    const db = new Date(b.DataNasc).getDate();
+                    return da - db;
+                });
+
+                let csv = 'Nome,Data de Nascimento\n';
+                aniversariantes.forEach(m => {
+                    csv += `"${m.Nome}","${m.DataNasc}"\n`;
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `relatorio_aniversariantes_mes_${mes}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                return;
+            }
+
+            let field;
+            switch (reportType) {
+                case 'status':
+                    field = 'Status';
+                    break;
+                case 'sexo':
+                    field = 'Sexo';
+                    break;
+                case 'batismo':
+                    field = 'Batizado';
+                    break;
+                case 'estadoCivil':
+                    field = 'EstadoCivil';
+                    break;
+                case 'membro':
+                    field = 'Membro';
+                    break;
+            }
+
+            const reportData = calculatePercentage(membros, field);
+            let csv = 'Categoria,Quantidade,Percentual,Nomes\n';
+
+            for (const [key, value] of Object.entries(reportData)) {
+                const nomes = membros.filter(m => (m[field] || 'Não informado') === key)
+                                     .map(m => m.Nome).join("; ");
+                // escapar possíveis aspas no campo nomes
+                const nomesEscapados = nomes.replace(/"/g, '""');
+                csv += `"${key}",${value.count},${value.percentage}%,"${nomesEscapados}"\n`;
+            }
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `relatorio_${reportType}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function backupData() {
+            const dataStr = JSON.stringify(membros);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `backup_membros_${new Date().toISOString().slice(0,10)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        function triggerRestore() {
+            document.getElementById('restoreFile').click();
+        }
+
+        function restoreData(evt) {
+            const file = evt.target.files[0];
+            
+            if (!file) {
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const contents = e.target.result;
+                    const restoredData = JSON.parse(contents);
+                    
+                    if (Array.isArray(restoredData)) {
+                        membros = restoredData;
+                        localStorage.setItem('membrosData', JSON.stringify(membros));
+                        
+                        updateDashboard();
+                        renderMembrosTable();
+                        
+                        showSuccessModal('Dados restaurados com sucesso!');
+                    } else {
+                        alert('O arquivo não contém dados válidos.');
+                    }
+                } catch (error) {
+                    console.error('Erro ao restaurar dados:', error);
+                    alert('Erro ao restaurar dados. Verifique se o arquivo é válido.');
+                }
+            };
+            reader.readAsText(file);
+            
+            // Limpar o input para permitir selecionar o mesmo arquivo novamente
+            evt.target.value = '';
+        }
+    </script>
 </body>
 </html>
