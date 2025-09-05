@@ -343,9 +343,6 @@
                             <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#adicionarMembroModal">
                                 <i class="bi bi-plus-circle me-1"></i> Adicionar Membro
                             </button>
-                            <button class="btn btn-outline-primary" onclick="addSampleData()">
-                                <i class="bi bi-lightning me-1"></i> Dados de Exemplo
-                            </button>
                         </div>
                     </div>
                     
@@ -666,22 +663,13 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="Se_Pai" class="form-label required">Se Pai</label>
-                                <select class="form-select" id="Se_Pai" required>
+                                <label for="Tem_Filhos" class="form-label required">Tem Filhos</label>
+                                <select class="form-select" id="Tem_Filhos" required>
                                     <option value="">Selecione...</option>
                                     <option value="Sim">Sim</option>
                                     <option value="Não">Não</option>
                                 </select>
-                                <div class="invalid-feedback">Por favor, selecione se é pai.</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="Se_Mae" class="form-label required">Se Mãe</label>
-                                <select class="form-select" id="Se_Mae" required>
-                                    <option value="">Selecione...</option>
-                                    <option value="Sim">Sim</option>
-                                    <option value="Não">Não</option>
-                                </select>
-                                <div class="invalid-feedback">Por favor, selecione se é mãe.</div>
+                                <div class="invalid-feedback">Por favor, selecione se tem filhos.</div>
                             </div>
                         </div>
 
@@ -748,8 +736,9 @@
         const fieldMapping = {
             'casdastro': 'casdastro',
             'Nm_Membro': 'Nm_Membro',
-            'Se_Pai': 'Se_Pai',
-            'Se_Mae': 'Se_Mae',
+            'Se_Pai': 'Se_Pai', // Mapeamento temporário para o CSV
+            'Se_Mae': 'Se_Mae', // Mapeamento temporário para o CSV
+            'Tem_Filhos': 'Tem_Filhos',
             'Sexo': 'Sexo',
             'Membro': 'Membro',
             'Batizado': 'Batizado',
@@ -894,8 +883,13 @@
                             }
                             
                             // Padroniza os valores de "Sim" e "Não"
-                            if (memberData.Se_Pai) memberData.Se_Pai = normalizeYesNo(memberData.Se_Pai);
-                            if (memberData.Se_Mae) memberData.Se_Mae = normalizeYesNo(memberData.Se_Mae);
+                            if (row.Se_Pai && normalizeYesNo(row.Se_Pai) === 'Sim' || row.Se_Mae && normalizeYesNo(row.Se_Mae) === 'Sim') {
+                                memberData.Tem_Filhos = 'Sim';
+                            } else {
+                                memberData.Tem_Filhos = 'Não';
+                            }
+
+                            if (memberData.Sexo) memberData.Sexo = normalizeSexo(memberData.Sexo);
                             if (memberData.Membro) memberData.Membro = normalizeYesNo(memberData.Membro);
                             if (memberData.Batizado) memberData.Batizado = normalizeYesNo(memberData.Batizado);
 
@@ -974,6 +968,18 @@
             return value;
         }
 
+        // Função para normalizar valores de sexo
+        function normalizeSexo(value) {
+            const lowerValue = String(value).toLowerCase().trim();
+            if (lowerValue === 'masculino' || lowerValue === 'm') {
+                return 'Masculino';
+            }
+            if (lowerValue === 'feminino' || lowerValue === 'f') {
+                return 'Feminino';
+            }
+            return value;
+        }
+
         function debugCSV(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -1042,66 +1048,6 @@
             document.getElementById('previewTableBody').innerHTML = '';
             document.getElementById('importStatusCard').classList.add('d-none');
             document.getElementById('debugInfo').style.display = 'none';
-        }
-
-        function addSampleData() {
-            const sampleData = [
-                {
-                    casdastro: "001",
-                    Nm_Membro: "João Silva",
-                    Se_Pai: "Sim",
-                    Se_Mae: "Não",
-                    Sexo: "Masculino",
-                    Membro: "Sim",
-                    Batizado: "Sim",
-                    Celular: "(11) 99999-8888",
-                    Data_Nasc: "1985-03-15",
-                    CPF: "123.456.789-01",
-                    Naturalidade: "São Paulo",
-                    Estado_Civil: "Casado",
-                    Escolaridade: "Ensino Superior",
-                    Profissao: "Analista de Sistemas",
-                    Nm_Conjuge: "Maria Silva",
-                    Endereco: "Rua das Flores, 123",
-                    Comp_Endereco: "Apto 101",
-                    Bairro: "Centro",
-                    Cidade: "São Paulo",
-                    CEP: "01000-000",
-                    Nm_Mae: "Ana Silva",
-                    Nm_Pai: "José Silva"
-                },
-                {
-                    casdastro: "002",
-                    Nm_Membro: "Maria Santos",
-                    Se_Pai: "Não",
-                    Se_Mae: "Sim",
-                    Sexo: "Feminino",
-                    Membro: "Sim",
-                    Batizado: "Não",
-                    Celular: "(11) 88888-7777",
-                    Data_Nasc: "1990-07-22",
-                    CPF: "987.654.321-00",
-                    Naturalidade: "Rio de Janeiro",
-                    Estado_Civil: "Solteiro",
-                    Escolaridade: "Ensino Médio",
-                    Profissao: "Professora",
-                    Nm_Conjuge: "",
-                    Endereco: "Av. Paulista, 456",
-                    Comp_Endereco: "Conjunto 202",
-                    Bairro: "Bela Vista",
-                    Cidade: "São Paulo",
-                    CEP: "01300-000",
-                    Nm_Mae: "Carla Santos",
-                    Nm_Pai: "Pedro Santos"
-                }
-            ];
-
-            membros = [...membros, ...sampleData];
-            localStorage.setItem('membrosData', JSON.stringify(membros));
-            
-            updateDashboard();
-            renderMembrosTable();
-            showSuccessModal('Dados de exemplo adicionados com sucesso!');
         }
 
         function showPreview() {
@@ -1347,8 +1293,7 @@
             document.getElementById('membroId').value = memberId;
             document.getElementById('casdastro').value = membro.casdastro;
             document.getElementById('Nm_Membro').value = membro.Nm_Membro;
-            document.getElementById('Se_Pai').value = membro.Se_Pai;
-            document.getElementById('Se_Mae').value = membro.Se_Mae;
+            document.getElementById('Tem_Filhos').value = membro.Tem_Filhos;
             document.getElementById('Sexo').value = membro.Sexo;
             document.getElementById('Membro').value = membro.Membro;
             document.getElementById('Batizado').value = membro.Batizado;
@@ -1390,8 +1335,7 @@
             const membroData = {
                 casdastro: document.getElementById('casdastro').value,
                 Nm_Membro: document.getElementById('Nm_Membro').value,
-                Se_Pai: document.getElementById('Se_Pai').value,
-                Se_Mae: document.getElementById('Se_Mae').value,
+                Tem_Filhos: document.getElementById('Tem_Filhos').value,
                 Sexo: document.getElementById('Sexo').value,
                 Membro: document.getElementById('Membro').value,
                 Batizado: document.getElementById('Batizado').value,
@@ -1461,7 +1405,7 @@
             if (!memberToDelete) return;
             
             // Encontrar e remover o membro
-            const index = membros.findIndex(m => m.casdastro === memberToDelete);
+            const index = membros.findIndex(m => m.casdastro === memberId);
             if (index !== -1) {
                 membros.splice(index, 1);
                 
@@ -1693,15 +1637,33 @@
         }
 
         function backupData() {
-            const dataStr = JSON.stringify(membros);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = `backup_membros_${new Date().toISOString().slice(0,10)}.json`;
-            
+            // Mapeia os campos para a ordem desejada no CSV
+            const headers = [
+                'casdastro', 'Nm_Membro', 'Tem_Filhos', 'Sexo', 'Membro', 'Batizado', 'Celular', 'Data_Nasc', 'CPF',
+                'Naturalidade', 'Estado_Civil', 'Escolaridade', 'Profissao', 'Nm_Conjuge', 'Endereco', 'Comp_Endereco',
+                'Bairro', 'Cidade', 'CEP', 'Nm_Mae', 'Nm_Pai'
+            ];
+
+            let csv = headers.join(';') + '\n';
+
+            membros.forEach(membro => {
+                const row = headers.map(header => {
+                    const value = membro[header] || '';
+                    return `"${value}"`;
+                }).join(';');
+                csv += row + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
+            const url = URL.createObjectURL(blob);
+            
+            linkElement.setAttribute('href', url);
+            linkElement.setAttribute('download', `backup_membros_${new Date().toISOString().slice(0,10)}.csv`);
+            linkElement.style.visibility = 'hidden';
+            document.body.appendChild(linkElement);
             linkElement.click();
+            document.body.removeChild(linkElement);
         }
 
         function triggerRestore() {
