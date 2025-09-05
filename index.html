@@ -872,9 +872,9 @@
                 encoding: 'UTF-8',
                 skipEmptyLines: true,
                 transformHeader: function(header) {
-                    // Normaliza os cabeçalhos para remover acentos e espaços
-                    return header.trim().toLowerCase()
-                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
+                    // Normaliza os cabeçalhos para remover acentos e espaços, e manter a capitalização
+                    const normalizedHeader = header.trim().replace(/\s+/g, '_');
+                    return normalizedHeader;
                 },
                 complete: function(results) {
                     console.log('Resultado completo do parsing:', results);
@@ -889,8 +889,16 @@
                         const novosMembros = results.data.map((row, index) => {
                             let memberData = {};
                             for (const key in fieldMapping) {
+                                // Mapeia o cabeçalho do arquivo para o campo do sistema
                                 memberData[key] = row[key] || '';
                             }
+                            
+                            // Padroniza os valores de "Sim" e "Não"
+                            if (memberData.Se_Pai) memberData.Se_Pai = normalizeYesNo(memberData.Se_Pai);
+                            if (memberData.Se_Mae) memberData.Se_Mae = normalizeYesNo(memberData.Se_Mae);
+                            if (memberData.Membro) memberData.Membro = normalizeYesNo(memberData.Membro);
+                            if (memberData.Batizado) memberData.Batizado = normalizeYesNo(memberData.Batizado);
+
                             // Formatar data se existir
                             if (memberData.Data_Nasc) {
                                 memberData.Data_Nasc = formatarData(memberData.Data_Nasc);
@@ -901,6 +909,9 @@
                                 memberData.CPF = formatarCPF(memberData.CPF.toString());
                             }
                             
+                            // Define o status padrão (para o dashboard)
+                            memberData.Status = 'Ativo';
+
                             return memberData;
                         }).filter(membro => membro.Nm_Membro); // Remove linhas vazias
                         
@@ -949,6 +960,18 @@
                     statusCard.classList.add('d-none');
                 }
             });
+        }
+
+        // Função para normalizar valores para "Sim" ou "Não"
+        function normalizeYesNo(value) {
+            const lowerValue = String(value).toLowerCase().trim();
+            if (lowerValue === 'sim' || lowerValue === 's') {
+                return 'Sim';
+            }
+            if (lowerValue === 'nao' || lowerValue === 'não' || lowerValue === 'n') {
+                return 'Não';
+            }
+            return value;
         }
 
         function debugCSV(file) {
