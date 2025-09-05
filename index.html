@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Igreja Batista Parque Santa Cruz - Dashboard de Membros</title>
+    <title>Igreja Batista Parque Santa Cruz</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
@@ -22,6 +22,15 @@
         body {
             background-color: var(--light-bg);
             font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container-fluid {
+            flex: 1;
         }
         
         .sidebar {
@@ -166,6 +175,19 @@
             font-size: 12px;
             display: none;
         }
+        
+        footer {
+            padding: 15px;
+            background-color: #e9eaf5;
+            color: #555;
+            text-align: center;
+            font-size: .8em;
+            width: 100%;
+            box-shadow: 0 -10px 5px rgba(0,0,0,.1);
+            position: sticky;
+            bottom: 0;
+            left: 0;
+        }
     </style>
 </head>
 <body>
@@ -173,7 +195,7 @@
         <div class="row">
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 sidebar px-0">
-                <div class="sidebar-heading">Dashboard Membros</div>
+                <div class="sidebar-heading">Igreja Batista Parque Santa Cruz</div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <a class="nav-link active" href="#" data-bs-target="dashboard">
@@ -357,7 +379,7 @@
                                 <table class="table table-striped table-hover">
                                     <thead class="table-dark">
                                         <tr>
-                                            <th>Nome</th>
+                                            <th>Nome do Membro</th>
                                             <th>Status</th>
                                             <th>Sexo</th>
                                             <th>Membro</th>
@@ -444,9 +466,6 @@
                             </div>
                             <button class="btn btn-primary" id="importCsvBtn">Importar CSV</button>
                             <button class="btn btn-secondary ms-2" id="clearCsvBtn">Limpar</button>
-                            <button class="btn btn-info ms-2" onclick="downloadCSVTemplate()">
-                                <i class="bi bi-download me-1"></i> Baixar Modelo CSV
-                            </button>
                         </div>
                     </div>
                     
@@ -482,13 +501,13 @@
                                 <table class="table table-striped">
                                     <thead class="table-dark">
                                         <tr>
-                                            <th>Nome</th>
-                                            <th>Status</th>
+                                            <th>Nm_Membro</th>
                                             <th>Sexo</th>
                                             <th>Membro</th>
                                             <th>Batizado</th>
-                                            <th>Data Nasc.</th>
+                                            <th>Data_Nasc</th>
                                             <th>CPF</th>
+                                            <th>Naturalidade</th>
                                         </tr>
                                     </thead>
                                     <tbody id="previewTableBody">
@@ -516,25 +535,21 @@
                         <input type="hidden" id="membroId">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="nome" class="form-label required">Nome</label>
-                                <input type="text" class="form-control" id="nome" required>
-                                <div class="invalid-feedback">Por favor, informe o nome.</div>
+                                <label for="casdastro" class="form-label required">Cadastro</label>
+                                <input type="text" class="form-control" id="casdastro" required>
+                                <div class="invalid-feedback">Por favor, informe o número de cadastro.</div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="status" class="form-label required">Status</label>
-                                <select class="form-select" id="status" required>
-                                    <option value="">Selecione...</option>
-                                    <option value="Ativo">Ativo</option>
-                                    <option value="Inativo">Inativo</option>
-                                </select>
-                                <div class="invalid-feedback">Por favor, selecione o status.</div>
+                                <label for="Nm_Membro" class="form-label required">Nome do Membro</label>
+                                <input type="text" class="form-control" id="Nm_Membro" required>
+                                <div class="invalid-feedback">Por favor, informe o nome.</div>
                             </div>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="sexo" class="form-label required">Sexo</label>
-                                <select class="form-select" id="sexo" required>
+                                <label for="Sexo" class="form-label required">Sexo</label>
+                                <select class="form-select" id="Sexo" required>
                                     <option value="">Selecione...</option>
                                     <option value="Masculino">Masculino</option>
                                     <option value="Feminino">Feminino</option>
@@ -542,8 +557,8 @@
                                 <div class="invalid-feedback">Por favor, selecione o sexo.</div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="membro" class="form-label required">Membro</label>
-                                <select class="form-select" id="membro" required>
+                                <label for="Membro" class="form-label required">Membro</label>
+                                <select class="form-select" id="Membro" required>
                                     <option value="">Selecione...</option>
                                     <option value="Sim">Sim</option>
                                     <option value="Não">Não</option>
@@ -554,8 +569,8 @@
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="batizado" class="form-label required">Batizado</label>
-                                <select class="form-select" id="batizado" required>
+                                <label for="Batizado" class="form-label required">Batizado</label>
+                                <select class="form-select" id="Batizado" required>
                                     <option value="">Selecione...</option>
                                     <option value="Sim">Sim</option>
                                     <option value="Não">Não</option>
@@ -563,19 +578,30 @@
                                 <div class="invalid-feedback">Por favor, selecione se é batizado.</div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="celular" class="form-label">Celular</label>
-                                <input type="text" class="form-control" id="celular" placeholder="(11) 99999-9999">
+                                <label for="Celular" class="form-label">Celular</label>
+                                <input type="text" class="form-control" id="Celular" placeholder="(11) 99999-9999">
                             </div>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="dataNasc" class="form-label">Data de Nascimento</label>
-                                <input type="date" class="form-control" id="dataNasc">
+                                <label for="Data_Nasc" class="form-label">Data de Nascimento</label>
+                                <input type="date" class="form-control" id="Data_Nasc">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="estadoCivil" class="form-label">Estado Civil</label>
-                                <select class="form-select" id="estadoCivil">
+                                <label for="CPF" class="form-label">CPF</label>
+                                <input type="text" class="form-control" id="CPF" placeholder="000.000.000-00">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="Naturalidade" class="form-label">Naturalidade</label>
+                                <input type="text" class="form-control" id="Naturalidade">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="Estado_Civil" class="form-label">Estado Civil</label>
+                                <select class="form-select" id="Estado_Civil">
                                     <option value="">Selecione...</option>
                                     <option value="Solteiro">Solteiro(a)</option>
                                     <option value="Casado">Casado(a)</option>
@@ -584,44 +610,81 @@
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="cpf" class="form-label">CPF</label>
-                                <input type="text" class="form-control" id="cpf" placeholder="000.000.000-00">
+                                <label for="Escolaridade" class="form-label">Escolaridade</label>
+                                <input type="text" class="form-control" id="Escolaridade">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="rg" class="form-label">RG</label>
-                                <input type="text" class="form-control" id="rg" placeholder="00.000.000-0">
+                                <label for="Profissao" class="form-label">Profissão</label>
+                                <input type="text" class="form-control" id="Profissao">
                             </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Nm_Conjuge" class="form-label">Nome do Cônjuge</label>
+                            <input type="text" class="form-control" id="Nm_Conjuge">
                         </div>
                         
                         <div class="mb-3">
-                            <label for="endereco" class="form-label">Endereço</label>
-                            <input type="text" class="form-control" id="endereco" placeholder="Rua, número, complemento">
+                            <label for="Endereco" class="form-label">Endereço</label>
+                            <input type="text" class="form-control" id="Endereco" placeholder="Rua, número">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Comp_Endereco" class="form-label">Complemento</label>
+                            <input type="text" class="form-control" id="Comp_Endereco" placeholder="Apto, Bloco, Casa">
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="bairro" class="form-label">Bairro</label>
-                                <input type="text" class="form-control" id="bairro">
+                                <label for="Bairro" class="form-label">Bairro</label>
+                                <input type="text" class="form-control" id="Bairro">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="cidade" class="form-label">Cidade</label>
-                                <input type="text" class="form-control" id="cidade">
+                                <label for="Cidade" class="form-label">Cidade</label>
+                                <input type="text" class="form-control" id="Cidade">
                             </div>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="mae" class="form-label">Nome da Mãe</label>
-                                <input type="text" class="form-control" id="mae">
+                                <label for="CEP" class="form-label">CEP</label>
+                                <input type="text" class="form-control" id="CEP">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="pai" class="form-label">Nome do Pai</label>
-                                <input type="text" class="form-control" id="pai">
+                                <label for="Nm_Mae" class="form-label">Nome da Mãe</label>
+                                <input type="text" class="form-control" id="Nm_Mae">
                             </div>
                         </div>
+
+                        <div class="mb-3">
+                            <label for="Nm_Pai" class="form-label">Nome do Pai</label>
+                            <input type="text" class="form-control" id="Nm_Pai">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="Se_Pai" class="form-label required">Se Pai</label>
+                                <select class="form-select" id="Se_Pai" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                                <div class="invalid-feedback">Por favor, selecione se é pai.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="Se_Mae" class="form-label required">Se Mãe</label>
+                                <select class="form-select" id="Se_Mae" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                                <div class="invalid-feedback">Por favor, selecione se é mãe.</div>
+                            </div>
+                        </div>
+
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -680,6 +743,32 @@
         const itemsPerPage = 10;
         let memberToDelete = null;
         let statusChart, sexoChart;
+
+        // Mapeamento dos campos do CSV para os campos do sistema
+        const fieldMapping = {
+            'casdastro': 'casdastro',
+            'Nm_Membro': 'Nm_Membro',
+            'Se_Pai': 'Se_Pai',
+            'Se_Mae': 'Se_Mae',
+            'Sexo': 'Sexo',
+            'Membro': 'Membro',
+            'Batizado': 'Batizado',
+            'Celular': 'Celular',
+            'Data_Nasc': 'Data_Nasc',
+            'CPF': 'CPF',
+            'Naturalidade': 'Naturalidade',
+            'Estado_Civil': 'Estado_Civil',
+            'Escolaridade': 'Escolaridade',
+            'Profissao': 'Profissao',
+            'Nm_Conjuge': 'Nm_Conjuge',
+            'Endereco': 'Endereco',
+            'Comp_Endereco': 'Comp_Endereco',
+            'Bairro': 'Bairro',
+            'Cidade': 'Cidade',
+            'CEP': 'CEP',
+            'Nm_Mae': 'Nm_Mae',
+            'Nm_Pai': 'Nm_Pai'
+        };
 
         // Inicialização quando o documento estiver pronto
         document.addEventListener('DOMContentLoaded', function() {
@@ -778,13 +867,14 @@
             // Configurações robustas para o PapaParse
             Papa.parse(file, {
                 header: true,
-                delimiter: ',', // Força vírgula como delimitador
+                delimiter: ';', // Força ponto e vírgula como delimitador
                 newline: '\n',
                 encoding: 'UTF-8',
                 skipEmptyLines: true,
                 transformHeader: function(header) {
-                    // Normaliza os cabeçalhos
-                    return header.trim().toLowerCase().replace(/\s+/g, '');
+                    // Normaliza os cabeçalhos para remover acentos e espaços
+                    return header.trim().toLowerCase()
+                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
                 },
                 complete: function(results) {
                     console.log('Resultado completo do parsing:', results);
@@ -797,37 +887,22 @@
                         
                         // Processar dados
                         const novosMembros = results.data.map((row, index) => {
+                            let memberData = {};
+                            for (const key in fieldMapping) {
+                                memberData[key] = row[key] || '';
+                            }
                             // Formatar data se existir
-                            let dataNascFormatada = '';
-                            const dataOriginal = row.datanasc || row.datanascimento || row['datanasc'] || '';
-                            if (dataOriginal) {
-                                dataNascFormatada = formatarData(dataOriginal);
+                            if (memberData.Data_Nasc) {
+                                memberData.Data_Nasc = formatarData(memberData.Data_Nasc);
                             }
                             
                             // Formatar CPF se existir
-                            let cpfFormatado = '';
-                            if (row.cpf) {
-                                cpfFormatado = formatarCPF(row.cpf.toString());
+                            if (memberData.CPF) {
+                                memberData.CPF = formatarCPF(memberData.CPF.toString());
                             }
                             
-                            return {
-                                Nome: row.nome || `Membro ${index + 1}`,
-                                Status: row.status || 'Ativo',
-                                Sexo: row.sexo || 'Masculino',
-                                Membro: row.membro || 'Sim',
-                                Batizado: row.batizado || 'Não',
-                                Celular: row.celular || row.telefone || '',
-                                DataNasc: dataNascFormatada,
-                                RG: row.rg || '',
-                                CPF: cpfFormatado,
-                                EstadoCivil: row.estadocivil || row.estado_civil || '',
-                                Endereco: row.endereço || row.endereco || '',
-                                Bairro: row.bairro || '',
-                                Cidade: row.cidade || '',
-                                Mae: row.nomedamãe || row.nomedamae || row.mae || '',
-                                Pai: row.nomedopai || row.pai || ''
-                            };
-                        }).filter(membro => membro.Nome && membro.Nome !== 'Membro'); // Remove linhas vazias
+                            return memberData;
+                        }).filter(membro => membro.Nm_Membro); // Remove linhas vazias
                         
                         console.log('Membros processados:', novosMembros);
                         
@@ -946,60 +1021,55 @@
             document.getElementById('debugInfo').style.display = 'none';
         }
 
-        function downloadCSVTemplate() {
-            const csvContent = `nome,status,sexo,membro,batizado,datanasc,cpf,celular,estadocivil,rg,endereco,bairro,cidade,mae,pai
-João Silva,Ativo,Masculino,Sim,Sim,15/03/1985,12345678901,11999998888,Casado,12345678,Rua das Flores 123,Centro,São Paulo,Maria Silva,José Silva
-Maria Santos,Ativo,Feminino,Sim,Sim,22/07/1990,98765432100,11988887777,Solteiro,87654321,Av. Paulista 456,Bela Vista,São Paulo,Ana Santos,Carlos Santos
-Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Divorciado,45678912,Rua Augusta 789,Consolação,São Paulo,Clara Oliveira,Paulo Oliveira`;
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'modelo_membros.csv');
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
         function addSampleData() {
             const sampleData = [
                 {
-                    Nome: "João Silva",
-                    Status: "Ativo",
+                    casdastro: "001",
+                    Nm_Membro: "João Silva",
+                    Se_Pai: "Sim",
+                    Se_Mae: "Não",
                     Sexo: "Masculino",
                     Membro: "Sim",
                     Batizado: "Sim",
                     Celular: "(11) 99999-8888",
-                    DataNasc: "1985-03-15",
+                    Data_Nasc: "1985-03-15",
                     CPF: "123.456.789-01",
-                    RG: "12.345.678-9",
-                    EstadoCivil: "Casado",
+                    Naturalidade: "São Paulo",
+                    Estado_Civil: "Casado",
+                    Escolaridade: "Ensino Superior",
+                    Profissao: "Analista de Sistemas",
+                    Nm_Conjuge: "Maria Silva",
                     Endereco: "Rua das Flores, 123",
+                    Comp_Endereco: "Apto 101",
                     Bairro: "Centro",
                     Cidade: "São Paulo",
-                    Mae: "Maria Silva",
-                    Pai: "José Silva"
+                    CEP: "01000-000",
+                    Nm_Mae: "Ana Silva",
+                    Nm_Pai: "José Silva"
                 },
                 {
-                    Nome: "Maria Santos",
-                    Status: "Ativo",
+                    casdastro: "002",
+                    Nm_Membro: "Maria Santos",
+                    Se_Pai: "Não",
+                    Se_Mae: "Sim",
                     Sexo: "Feminino",
                     Membro: "Sim",
                     Batizado: "Não",
                     Celular: "(11) 88888-7777",
-                    DataNasc: "1990-07-22",
+                    Data_Nasc: "1990-07-22",
                     CPF: "987.654.321-00",
-                    RG: "87.654.321-0",
-                    EstadoCivil: "Solteiro",
+                    Naturalidade: "Rio de Janeiro",
+                    Estado_Civil: "Solteiro",
+                    Escolaridade: "Ensino Médio",
+                    Profissao: "Professora",
+                    Nm_Conjuge: "",
                     Endereco: "Av. Paulista, 456",
+                    Comp_Endereco: "Conjunto 202",
                     Bairro: "Bela Vista",
                     Cidade: "São Paulo",
-                    Mae: "Ana Santos",
-                    Pai: "Carlos Santos"
+                    CEP: "01300-000",
+                    Nm_Mae: "Carla Santos",
+                    Nm_Pai: "Pedro Santos"
                 }
             ];
 
@@ -1021,13 +1091,13 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
             previewData.forEach(membro => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${membro.Nome}</td>
-                    <td>${membro.Status}</td>
+                    <td>${membro.Nm_Membro}</td>
                     <td>${membro.Sexo}</td>
                     <td>${membro.Membro}</td>
                     <td>${membro.Batizado}</td>
-                    <td>${membro.DataNasc || ''}</td>
+                    <td>${membro.Data_Nasc || ''}</td>
                     <td>${membro.CPF || ''}</td>
+                    <td>${membro.Naturalidade || ''}</td>
                 `;
                 previewBody.appendChild(row);
             });
@@ -1047,8 +1117,8 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
             const hoje = new Date();
             const mesAtual = hoje.getMonth() + 1;
             const aniversariantes = membros.filter(m => {
-                if (!m.DataNasc) return false;
-                const dataNasc = new Date(m.DataNasc);
+                if (!m.Data_Nasc) return false;
+                const dataNasc = new Date(m.Data_Nasc);
                 return dataNasc.getMonth() + 1 === mesAtual;
             }).length;
             document.getElementById('aniversariantes').textContent = aniversariantes;
@@ -1058,7 +1128,7 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
         }
 
         function updateCharts() {
-            // Dados para gráfico de status
+            // Dados para gráfico de status (manter o status para o dashboard)
             const statusCounts = {
                 'Ativo': membros.filter(m => m.Status === 'Ativo').length,
                 'Inativo': membros.filter(m => m.Status === 'Inativo').length
@@ -1135,7 +1205,7 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
             const membroFilter = document.getElementById('membroFilter').value;
             
             let filteredMembros = membros.filter(membro => {
-                const matchesSearch = membro.Nome.toLowerCase().includes(searchTerm);
+                const matchesSearch = membro.Nm_Membro.toLowerCase().includes(searchTerm);
                 const matchesStatus = statusFilter === '' || membro.Status === statusFilter;
                 const matchesMembro = membroFilter === '' || membro.Membro === membroFilter;
                 
@@ -1153,17 +1223,17 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
             paginatedMembros.forEach(membro => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${membro.Nome}</td>
+                    <td>${membro.Nm_Membro}</td>
                     <td><span class="badge ${membro.Status === 'Ativo' ? 'bg-success' : 'bg-secondary'}">${membro.Status}</span></td>
                     <td>${membro.Sexo}</td>
                     <td>${membro.Membro}</td>
                     <td>${membro.Batizado}</td>
                     <td>${membro.Celular}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary edit-btn" data-id="${membro.Nome}">
+                        <button class="btn btn-sm btn-outline-primary edit-btn" data-id="${membro.casdastro}">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${membro.Nome}">
+                        <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${membro.casdastro}">
                             <i class="bi bi-trash"></i>
                         </button>
                     </td>
@@ -1246,27 +1316,34 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
         }
 
         function editMembro(memberId) {
-            const membro = membros.find(m => m.Nome === memberId);
+            const membro = membros.find(m => m.casdastro === memberId);
             if (!membro) return;
             
             // Preencher o formulário com os dados do membro
             document.getElementById('modalTitle').textContent = 'Editar Membro';
             document.getElementById('membroId').value = memberId;
-            document.getElementById('nome').value = membro.Nome;
-            document.getElementById('status').value = membro.Status;
-            document.getElementById('sexo').value = membro.Sexo;
-            document.getElementById('membro').value = membro.Membro;
-            document.getElementById('batizado').value = membro.Batizado;
-            document.getElementById('celular').value = membro.Celular;
-            document.getElementById('dataNasc').value = membro.DataNasc;
-            document.getElementById('estadoCivil').value = membro.EstadoCivil;
-            document.getElementById('cpf').value = membro.CPF;
-            document.getElementById('rg').value = membro.RG;
-            document.getElementById('endereco').value = membro.Endereco;
-            document.getElementById('bairro').value = membro.Bairro;
-            document.getElementById('cidade').value = membro.Cidade;
-            document.getElementById('mae').value = membro.Mae;
-            document.getElementById('pai').value = membro.Pai;
+            document.getElementById('casdastro').value = membro.casdastro;
+            document.getElementById('Nm_Membro').value = membro.Nm_Membro;
+            document.getElementById('Se_Pai').value = membro.Se_Pai;
+            document.getElementById('Se_Mae').value = membro.Se_Mae;
+            document.getElementById('Sexo').value = membro.Sexo;
+            document.getElementById('Membro').value = membro.Membro;
+            document.getElementById('Batizado').value = membro.Batizado;
+            document.getElementById('Celular').value = membro.Celular;
+            document.getElementById('Data_Nasc').value = membro.Data_Nasc;
+            document.getElementById('CPF').value = membro.CPF;
+            document.getElementById('Naturalidade').value = membro.Naturalidade;
+            document.getElementById('Estado_Civil').value = membro.Estado_Civil;
+            document.getElementById('Escolaridade').value = membro.Escolaridade;
+            document.getElementById('Profissao').value = membro.Profissao;
+            document.getElementById('Nm_Conjuge').value = membro.Nm_Conjuge;
+            document.getElementById('Endereco').value = membro.Endereco;
+            document.getElementById('Comp_Endereco').value = membro.Comp_Endereco;
+            document.getElementById('Bairro').value = membro.Bairro;
+            document.getElementById('Cidade').value = membro.Cidade;
+            document.getElementById('CEP').value = membro.CEP;
+            document.getElementById('Nm_Mae').value = membro.Nm_Mae;
+            document.getElementById('Nm_Pai').value = membro.Nm_Pai;
             
             // Remover classes de validação
             document.getElementById('membroForm').classList.remove('was-validated');
@@ -1288,26 +1365,35 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
             // Coletar dados do formulário
             const memberId = document.getElementById('membroId').value;
             const membroData = {
-                Nome: document.getElementById('nome').value,
-                Status: document.getElementById('status').value,
-                Sexo: document.getElementById('sexo').value,
-                Membro: document.getElementById('membro').value,
-                Batizado: document.getElementById('batizado').value,
-                Celular: document.getElementById('celular').value,
-                DataNasc: document.getElementById('dataNasc').value,
-                EstadoCivil: document.getElementById('estadoCivil').value,
-                CPF: document.getElementById('cpf').value,
-                RG: document.getElementById('rg').value,
-                Endereco: document.getElementById('endereco').value,
-                Bairro: document.getElementById('bairro').value,
-                Cidade: document.getElementById('cidade').value,
-                Mae: document.getElementById('mae').value,
-                Pai: document.getElementById('pai').value
+                casdastro: document.getElementById('casdastro').value,
+                Nm_Membro: document.getElementById('Nm_Membro').value,
+                Se_Pai: document.getElementById('Se_Pai').value,
+                Se_Mae: document.getElementById('Se_Mae').value,
+                Sexo: document.getElementById('Sexo').value,
+                Membro: document.getElementById('Membro').value,
+                Batizado: document.getElementById('Batizado').value,
+                Celular: document.getElementById('Celular').value,
+                Data_Nasc: document.getElementById('Data_Nasc').value,
+                CPF: document.getElementById('CPF').value,
+                Naturalidade: document.getElementById('Naturalidade').value,
+                Estado_Civil: document.getElementById('Estado_Civil').value,
+                Escolaridade: document.getElementById('Escolaridade').value,
+                Profissao: document.getElementById('Profissao').value,
+                Nm_Conjuge: document.getElementById('Nm_Conjuge').value,
+                Endereco: document.getElementById('Endereco').value,
+                Comp_Endereco: document.getElementById('Comp_Endereco').value,
+                Bairro: document.getElementById('Bairro').value,
+                Cidade: document.getElementById('Cidade').value,
+                CEP: document.getElementById('CEP').value,
+                Nm_Mae: document.getElementById('Nm_Mae').value,
+                Nm_Pai: document.getElementById('Nm_Pai').value,
+                // Mantendo o campo "Status" para o dashboard
+                Status: 'Ativo'
             };
             
             if (memberId) {
                 // Editar membro existente
-                const index = membros.findIndex(m => m.Nome === memberId);
+                const index = membros.findIndex(m => m.casdastro === memberId);
                 if (index !== -1) {
                     membros[index] = { ...membros[index], ...membroData };
                 }
@@ -1352,7 +1438,7 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
             if (!memberToDelete) return;
             
             // Encontrar e remover o membro
-            const index = membros.findIndex(m => m.Nome === memberToDelete);
+            const index = membros.findIndex(m => m.casdastro === memberToDelete);
             if (index !== -1) {
                 membros.splice(index, 1);
                 
@@ -1374,7 +1460,6 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
             memberToDelete = null;
         }
 
-        // ---------- FUNÇÃO GERAR RELATÓRIO (SUBSTITUÍDA) ----------
         function generateReport() {
             const reportType = document.getElementById('relatorioTipo').value;
             const relatorioHeader = document.getElementById('relatorioHeader');
@@ -1393,7 +1478,7 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
                     return;
                 }
 
-                headers = ['Nome', 'Data de Nascimento'];
+                headers = ['Nome do Membro', 'Data de Nascimento'];
                 headers.forEach(header => {
                     const th = document.createElement('th');
                     th.textContent = header;
@@ -1402,12 +1487,12 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
 
                 // ordenar aniversariantes pelo dia do mês
                 const aniversariantes = membros.filter(m => {
-                    if (!m.DataNasc) return false;
-                    const data = new Date(m.DataNasc);
+                    if (!m.Data_Nasc) return false;
+                    const data = new Date(m.Data_Nasc);
                     return (data.getMonth() + 1) == mes;
                 }).sort((a,b) => {
-                    const da = new Date(a.DataNasc).getDate();
-                    const db = new Date(b.DataNasc).getDate();
+                    const da = new Date(a.Data_Nasc).getDate();
+                    const db = new Date(b.Data_Nasc).getDate();
                     return da - db;
                 });
 
@@ -1421,8 +1506,8 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
                 aniversariantes.forEach(m => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${m.Nome}</td>
-                        <td>${m.DataNasc}</td>
+                        <td>${m.Nm_Membro}</td>
+                        <td>${m.Data_Nasc}</td>
                     `;
                     relatorioBody.appendChild(row);
                 });
@@ -1447,7 +1532,7 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
                     break;
                 case 'estadoCivil':
                     headers = ['Estado Civil', 'Quantidade', 'Percentual', 'Nomes'];
-                    field = 'EstadoCivil';
+                    field = 'Estado_Civil';
                     break;
                 case 'membro':
                     headers = ['Tipo de Membro', 'Quantidade', 'Percentual', 'Nomes'];
@@ -1464,7 +1549,7 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
             const reportData = calculatePercentage(membros, field);
 
             for (const [key, value] of Object.entries(reportData)) {
-                const nomes = membros.filter(m => (m[field] || 'Não informado') === key).map(m => m.Nome).join(", ");
+                const nomes = membros.filter(m => (m[field] || 'Não informado') === key).map(m => m.Nm_Membro).join(", ");
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${key}</td>
@@ -1499,7 +1584,6 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
             return result;
         }
 
-        // ---------- FUNÇÃO EXPORTAR RELATÓRIO (SUBSTITUÍDA) ----------
         function exportReport() {
             const reportType = document.getElementById('relatorioTipo').value;
 
@@ -1512,18 +1596,18 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
 
                 // Ordenar por dia do mês antes de exportar
                 const aniversariantes = membros.filter(m => {
-                    if (!m.DataNasc) return false;
-                    const data = new Date(m.DataNasc);
+                    if (!m.Data_Nasc) return false;
+                    const data = new Date(m.Data_Nasc);
                     return (data.getMonth() + 1) == mes;
                 }).sort((a,b) => {
-                    const da = new Date(a.DataNasc).getDate();
-                    const db = new Date(b.DataNasc).getDate();
+                    const da = new Date(a.Data_Nasc).getDate();
+                    const db = new Date(b.Data_Nasc).getDate();
                     return da - db;
                 });
 
-                let csv = 'Nome,Data de Nascimento\n';
+                let csv = 'Nome do Membro,Data de Nascimento\n';
                 aniversariantes.forEach(m => {
-                    csv += `"${m.Nome}","${m.DataNasc}"\n`;
+                    csv += `"${m.Nm_Membro}","${m.Data_Nasc}"\n`;
                 });
 
                 const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1539,30 +1623,36 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
             }
 
             let field;
+            let headerField = '';
             switch (reportType) {
                 case 'status':
                     field = 'Status';
+                    headerField = 'Status';
                     break;
                 case 'sexo':
                     field = 'Sexo';
+                    headerField = 'Sexo';
                     break;
                 case 'batismo':
                     field = 'Batizado';
+                    headerField = 'Batizado';
                     break;
                 case 'estadoCivil':
-                    field = 'EstadoCivil';
+                    field = 'Estado_Civil';
+                    headerField = 'Estado Civil';
                     break;
                 case 'membro':
                     field = 'Membro';
+                    headerField = 'Tipo de Membro';
                     break;
             }
 
             const reportData = calculatePercentage(membros, field);
-            let csv = 'Categoria,Quantidade,Percentual,Nomes\n';
+            let csv = `${headerField},Quantidade,Percentual,Nomes\n`;
 
             for (const [key, value] of Object.entries(reportData)) {
                 const nomes = membros.filter(m => (m[field] || 'Não informado') === key)
-                                     .map(m => m.Nome).join("; ");
+                                     .map(m => m.Nm_Membro).join("; ");
                 // escapar possíveis aspas no campo nomes
                 const nomesEscapados = nomes.replace(/"/g, '""');
                 csv += `"${key}",${value.count},${value.percentage}%,"${nomesEscapados}"\n`;
@@ -1630,186 +1720,8 @@ Pedro Oliveira,Inativo,Masculino,Não,Não,10/12/1978,45678912345,11977776666,Di
             evt.target.value = '';
         }
     </script>
-<footer>Desenvolvido por <strong>Jaime J Mata Jr</strong></footer>
-
-<script>
-(function(){
-  const NOME_IGREJA = "Igreja Batista Parque Santa Cruz";
-  try {
-    document.title = NOME_IGREJA + " - Dashboard de Membros";
-  } catch(e){}
-
-  // Cabeçalho/brand visível se existir
-  try {
-    const sh = document.querySelector('.sidebar .sidebar-heading, header .brand, .navbar-brand, .app-title');
-    if (sh) sh.textContent = NOME_IGREJA;
-  } catch(e){}
-
-  // Remover "Baixar Modelo CSV" em runtime (reforço)
-  try {
-    Array.from(document.querySelectorAll('button, a')).forEach(el=>{
-      if(/baixar\s*modelo\s*csv/i.test(el.textContent||"")) el.remove();
-    });
-  } catch(e){}
-
-  // Footer com crédito do desenvolvedor
-  try {
-    let footer = document.querySelector('footer');
-    if(!footer){
-      footer = document.createElement('footer');
-      document.body.appendChild(footer);
-    }
-    footer.innerHTML = 'Desenvolvido por <strong>Jaime J Mata Jr</strong>';
-  } catch(e){}
-
-  const REQUIRED = ["casdastro","Nm_Membro","Se_Pai","Se_Mae","Sexo","Membro","Batizado","Celular","Data_Nasc","CPF","Naturalidade","Estado_Civil","Escolaridade","Profissão","Nm_Conjuge","Endereco","Comp_Endereco","Bairro","Cidade","CEP","Nm_Mae","Nm_Pai"];
-
-  // Adicionar campo CEP ao formulário, se não existir
-  try {
-    const form = document.getElementById('membroForm');
-    if(form && !form.querySelector('#CEP')){
-      const cidadeInput = form.querySelector('#Cidade');
-      const wrapper = document.createElement('div');
-      wrapper.className='col-md-6';
-      wrapper.innerHTML = '<label>CEP</label><input id="CEP" class="form-control">';
-      if(cidadeInput && cidadeInput.closest('.col-md-6')){
-        cidadeInput.closest('.col-md-6').insertAdjacentElement('afterend', wrapper);
-      } else {
-        const row = form.querySelector('.row, .g-3') || form;
-        row.appendChild(wrapper);
-      }
-    }
-  } catch(e){}
-
-  function ensureFields(obj){
-    const out = Object.assign({}, obj||{});
-    const valorCadastro = out.casdastro || out.Cadastro || new Date().toISOString().split('T')[0];
-    out.casdastro = valorCadastro;
-    out.Cadastro = valorCadastro;
-    REQUIRED.forEach(k=>{ if(out[k]===undefined) out[k]=''; });
-    return out;
-  }
-
-  // Normalizar dados já carregados
-  try {
-    if(window.membros && Array.isArray(window.membros)){
-      window.membros = window.membros.map(ensureFields);
-      localStorage.setItem('membrosData', JSON.stringify(window.membros));
-    }
-  } catch(e){}
-
-  // Renderização da tabela com novos campos
-  window.renderTable = function(){
-    const body = document.getElementById('membrosTableBody');
-    if(!body) return;
-    const thead = body.closest('table') ? body.closest('table').querySelector('thead') : null;
-    if(thead){
-      // montar cabeçalho com os campos exigidos + Ações
-      thead.innerHTML = '<tr>' + REQUIRED.map(k=>'<th>'+k+'</th>').join('') + '<th>Ações</th></tr>';
-    }
-    body.innerHTML='';
-    (window.membros||[]).forEach((m,i)=>{
-      const mm = ensureFields(m);
-      const tds = REQUIRED.map(k=> '<td>'+(mm[k]||'')+'</td>').join('');
-      body.insertAdjacentHTML('beforeend',
-        '<tr>'+ tds + '<td>'+
-          '<button class="btn btn-sm btn-warning" onclick="editarMembro('+i+')">Editar</button> '+
-          '<button class="btn btn-sm btn-danger" onclick="excluirMembro('+i+')">Excluir</button>'+
-        '</td></tr>');
-    });
-  };
-
-  // Substituir ação do botão salvar para usar os novos campos
-  (function(){
-    const saveBtn = document.getElementById('saveMembroBtn');
-    if(!saveBtn) return;
-    saveBtn.onclick = function(){
-      const cadastroAtual = (window.editIndex!=null && window.membros && window.membros[window.editIndex]) ?
-        (window.membros[window.editIndex].casdastro || window.membros[window.editIndex].Cadastro) :
-        new Date().toISOString().split('T')[0];
-
-      const novo = ensureFields({
-        casdastro: cadastroAtual,
-        Nm_Membro:document.getElementById('Nm_Membro')?.value||'',
-        Se_Pai:document.getElementById('Se_Pai')?.value||'',
-        Se_Mae:document.getElementById('Se_Mae')?.value||'',
-        Sexo:document.getElementById('Sexo')?.value||'',
-        Membro:document.getElementById('Membro')?.value||'',
-        Batizado:document.getElementById('Batizado')?.value||'',
-        Celular:document.getElementById('Celular')?.value||'',
-        Data_Nasc:document.getElementById('Data_Nasc')?.value||'',
-        CPF:document.getElementById('CPF')?.value||'',
-        Naturalidade:document.getElementById('Naturalidade')?.value||'',
-        Estado_Civil:document.getElementById('Estado_Civil')?.value||'',
-        Escolaridade:document.getElementById('Escolaridade')?.value||'',
-        Profissão:document.getElementById('Profissão')?.value||'',
-        Nm_Conjuge:document.getElementById('Nm_Conjuge')?.value||'',
-        Endereco:document.getElementById('Endereco')?.value||'',
-        Comp_Endereco:document.getElementById('Comp_Endereco')?.value||'',
-        Bairro:document.getElementById('Bairro')?.value||'',
-        Cidade:document.getElementById('Cidade')?.value||'',
-        CEP:document.getElementById('CEP')?.value||'',
-        Nm_Mae:document.getElementById('Nm_Mae')?.value||'',
-        Nm_Pai:document.getElementById('Nm_Pai')?.value||''
-      });
-
-      if(window.editIndex!=null){
-        window.membros[window.editIndex]=novo;
-        window.editIndex=null;
-      } else {
-        window.membros = window.membros || [];
-        window.membros.push(novo);
-      }
-      localStorage.setItem('membrosData', JSON.stringify(window.membros));
-      try{ if(window.bootstrap) document.querySelector('#membroModal .btn-close')?.click(); }catch(e){}
-      renderTable();
-      if(typeof window.atualizarDashboard==='function') window.atualizarDashboard();
-    };
-  })();
-
-  // Editar com novos campos
-  window.editarMembro = function(i){
-    const m = ensureFields((window.membros||[])[i]||{});
-    const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.value=v||''; };
-    set('Nm_Membro', m.Nm_Membro);
-    set('Se_Pai', m.Se_Pai);
-    set('Se_Mae', m.Se_Mae);
-    set('Sexo', m.Sexo);
-    set('Membro', m.Membro);
-    set('Batizado', m.Batizado);
-    set('Celular', m.Celular);
-    set('Data_Nasc', m.Data_Nasc);
-    set('CPF', m.CPF);
-    set('Naturalidade', m.Naturalidade);
-    set('Estado_Civil', m.Estado_Civil);
-    set('Escolaridade', m.Escolaridade);
-    set('Profissão', m.Profissão);
-    set('Nm_Conjuge', m.Nm_Conjuge);
-    set('Endereco', m.Endereco);
-    set('Comp_Endereco', m.Comp_Endereco);
-    set('Bairro', m.Bairro);
-    set('Cidade', m.Cidade);
-    set('CEP', m.CEP);
-    set('Nm_Mae', m.Nm_Mae);
-    set('Nm_Pai', m.Nm_Pai);
-    window.editIndex = i;
-    try{ if(window.bootstrap){ new bootstrap.Modal(document.getElementById('membroModal')).show(); } }catch(e){}
-  };
-
-  // Re-render após o patch
-  try {
-    if(document.readyState === 'loading'){
-      document.addEventListener('DOMContentLoaded', function(){
-        if(typeof renderTable==='function') renderTable();
-        if(typeof atualizarDashboard==='function') atualizarDashboard();
-      });
-    } else {
-      if(typeof renderTable==='function') renderTable();
-      if(typeof atualizarDashboard==='function') atualizarDashboard();
-    }
-  } catch(e){}
-})();
-</script>
-
 </body>
+<footer>
+    Gerenciamento de membros por Jaime J Mata Jr
+</footer>
 </html>
