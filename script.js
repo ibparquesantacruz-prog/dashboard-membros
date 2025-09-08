@@ -36,25 +36,30 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
 });
 
-function initializeApp() {
-    // Carregar dados do localStorage se existirem
-    const savedData = localStorage.getItem('membrosData');
-    if (savedData) {
-        try {
-            membros = JSON.parse(savedData);
-            updateDashboard();
-            renderMembrosTable();
-        } catch (e) {
-            console.error('Erro ao carregar dados:', e);
-            membros = [];
-        }
-    }
+async function initializeApp() {
+    // Carregar dados da API
+    await fetchMembros();
 
     // Configurar navegação
     setupNavigation();
 
     // Configurar eventos
     setupEventListeners();
+}
+
+async function fetchMembros() {
+    try {
+        const response = await fetch('/api/membros');
+        if (!response.ok) {
+            throw new Error('Erro ao carregar os dados da API.');
+        }
+        membros = await response.json();
+        updateDashboard();
+        renderMembrosTable();
+    } catch (e) {
+        console.error('Erro ao buscar membros:', e);
+        showErrorModal('Erro ao carregar os dados. Verifique a conexão.');
+    }
 }
 
 function setupNavigation() {
@@ -112,7 +117,6 @@ function importCSV() {
         return;
     }
     
-    // Mostrar barra de progresso
     const statusCard = document.getElementById('importStatusCard');
     const progressBar = document.getElementById('importProgress');
     const statusText = document.getElementById('importStatusText');
@@ -122,45 +126,34 @@ function importCSV() {
     progressBar.textContent = '10%';
     statusText.textContent = 'Iniciando importação...';
 
-    // Primeiro, fazer debug do arquivo
     debugCSV(file);
 
-    // Configurações robustas para o PapaParse
     Papa.parse(file, {
         header: true,
-        delimiter: ';', // Força ponto e vírgula como delimitador
+        delimiter: ';', 
         newline: '\n',
         encoding: 'UTF-8',
         skipEmptyLines: true,
         transformHeader: function(header) {
-            // Normaliza os cabeçalhos para remover acentos e espaços, e manter a capitalização
             const normalizedHeader = header.trim().replace(/\s+/g, '_');
             return normalizedHeader;
         },
-        complete: function(results) {
-            console.log('Resultado completo do parsing:', results);
-            
+        complete: async function(results) {
             if (results.data && results.data.length > 0) {
-                // Atualizar progresso
-                progressBar.style.width = '100%';
-                progressBar.textContent = '100%';
-                statusText.textContent = 'Processamento concluído!';
+                progressBar.style.width = '50%';
+                progressBar.textContent = '50%';
+                statusText.textContent = 'Processando dados...';
                 
-                // Processar dados
                 const novosMembros = results.data.map((row, index) => {
                     let memberData = {};
                     for (const key in fieldMapping) {
-                        // Mapeia o cabeçalho do arquivo para o campo do sistema
-                        // Se a coluna não existir, o valor será ''
                         memberData[key] = row[key] || '';
                     }
                     
-                    // Adicionando a nova lógica para Tem_Filhos
                     const temFilhosValue = row.Tem_Filhos || '';
                     if (temFilhosValue) {
                         memberData.Tem_Filhos = normalizeYesNo(temFilhosValue);
                     } else {
-                        // Se o campo Tem_Filhos não existir, tenta inferir
                         const temFilhosInferred = (row.Nm_Mae && row.Nm_Mae.trim() !== '') || (row.Nm_Pai && row.Nm_Pai.trim() !== '');
                         memberData.Tem_Filhos = temFilhosInferred ? 'Sim' : 'Não';
                     }
@@ -169,43 +162,47 @@ function importCSV() {
                     if (memberData.Membro) memberData.Membro = normalizeYesNo(memberData.Membro);
                     if (memberData.Batizado) memberData.Batizado = normalizeYesNo(memberData.Batizado);
 
-                    // Adiciona o campo de status
                     if(row.Status) {
                         memberData.Status = normalizeStatus(row.Status);
                     } else {
                         memberData.Status = 'Ativo';
                     }
 
-                    // Formatar data se existir
                     if (memberData.Data_Nasc) {
                         memberData.Data_Nasc = formatarData(memberData.Data_Nasc);
                     }
                     
-                    // Formatar CPF se existir
                     if (memberData.CPF) {
                         memberData.CPF = formatarCPF(memberData.CPF.toString());
                     }
                     
                     return memberData;
-                }).filter(membro => membro.Nm_Membro); // Remove linhas vazias
-                
-                console.log('Membros processados:', novosMembros);
+                }).filter(membro => membro.Nm_Membro);
                 
                 if (novosMembros.length > 0) {
-                    membros = novosMembros;
-                    
-                    // Salvar no localStorage
-                    localStorage.setItem('membrosData', JSON.stringify(membros));
-                    
-                    // Atualizar a interface
-                    updateDashboard();
-                    renderMembrosTable();
-                    
-                    // Mostrar preview
-                    showPreview();
-                    
-                    // Mostrar mensagem de sucesso
-                    showSuccessModal('Importação concluída com sucesso! ' + membros.length + ' registros processados.');
+                    try {
+                        const response = await fetch('/api/membros-bulk', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(novosMembros)
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Erro ao enviar dados para a API.');
+                        }
+                        
+                        await fetchMembros(); // Atualiza a lista da UI com os dados do banco de dados
+
+                        progressBar.style.width = '100%';
+                        progressBar.textContent = '100%';
+                        statusText.textContent = 'Processamento concluído!';
+                        
+                        showPreview(novosMembros);
+                        showSuccessModal('Importação concluída com sucesso! ' + novosMembros.length + ' registros processados.');
+                    } catch (e) {
+                        console.error('Erro na importação em massa:', e);
+                        showErrorModal('Erro ao salvar os dados no banco de dados: ' + e.message);
+                    }
                 } else {
                     showErrorModal('Nenhum dado válido encontrado no arquivo.');
                 }
@@ -219,12 +216,10 @@ function importCSV() {
                 console.error('Erros do PapaParse:', results.errors);
             }
             
-            // Esconder barra de progresso após 2 segundos
             setTimeout(() => {
                 statusCard.classList.add('d-none');
             }, 2000);
             
-            // Limpar o input
             fileInput.value = '';
         },
         error: function(error) {
@@ -236,7 +231,6 @@ function importCSV() {
     });
 }
 
-// Função para normalizar valores para "Sim" ou "Não"
 function normalizeYesNo(value) {
     const lowerValue = String(value).toLowerCase().trim();
     if (lowerValue === 'sim' || lowerValue === 's' || lowerValue === 'true' || lowerValue === 't') {
@@ -245,10 +239,9 @@ function normalizeYesNo(value) {
     if (lowerValue === 'nao' || lowerValue === 'não' || lowerValue === 'n' || lowerValue === 'false' || lowerValue === 'f') {
         return 'Não';
     }
-    return 'Não'; // Assume 'Não' se o valor não for reconhecido
+    return 'Não';
 }
 
-// Função para normalizar valores de sexo
 function normalizeSexo(value) {
     const lowerValue = String(value).toLowerCase().trim();
     if (lowerValue === 'masculino' || lowerValue === 'm' || lowerValue === 'homem') {
@@ -260,7 +253,6 @@ function normalizeSexo(value) {
     return value;
 }
 
-// Função para normalizar valores de status
 function normalizeStatus(value) {
     const lowerValue = String(value).toLowerCase().trim();
     if (lowerValue === 'ativo' || lowerValue === 'a') {
@@ -282,7 +274,6 @@ function debugCSV(file) {
         console.log('Conteúdo bruto do arquivo:');
         console.log(content);
         
-        // Mostrar informações de debug na interface
         const debugInfo = document.getElementById('debugInfo');
         const debugContent = document.getElementById('debugContent');
         
@@ -300,18 +291,15 @@ function debugCSV(file) {
 function formatarData(data) {
     if (!data) return '';
     
-    // Se já estiver no formato YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}$/.test(data)) {
         return data;
     }
     
-    // Se estiver no formato DD/MM/YYYY
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
         const partes = data.split('/');
         return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
     }
     
-    // Se for uma data válida
     try {
         const dataObj = new Date(data);
         if (!isNaN(dataObj.getTime())) {
@@ -321,21 +309,19 @@ function formatarData(data) {
         console.error('Erro ao formatar data:', e);
     }
     
-    return data; // Retorna original se não conseguir formatar
+    return data;
 }
 
 function formatarCPF(cpf) {
     if (!cpf) return '';
     
-    // Remove caracteres não numéricos
     cpf = cpf.toString().replace(/\D/g, '');
     
-    // Formata no padrão 000.000.000-00
     if (cpf.length === 11) {
         return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
     }
     
-    return cpf; // Retorna original se não tiver 11 dígitos
+    return cpf;
 }
 
 function clearCSV() {
@@ -345,12 +331,11 @@ function clearCSV() {
     document.getElementById('debugInfo').style.display = 'none';
 }
 
-function showPreview() {
+function showPreview(data) {
     const previewBody = document.getElementById('previewTableBody');
     previewBody.innerHTML = '';
     
-    // Mostrar apenas os primeiros 5 registros para preview
-    const previewData = membros.slice(0, 5);
+    const previewData = data.slice(0, 5);
     
     previewData.forEach(membro => {
         const row = document.createElement('tr');
@@ -368,7 +353,6 @@ function showPreview() {
 }
 
 function updateDashboard() {
-    // Atualizar estatísticas
     document.getElementById('total-membros').textContent = membros.length;
     
     const ativos = membros.filter(m => m.Status === 'Ativo').length;
@@ -377,7 +361,6 @@ function updateDashboard() {
     const batizados = membros.filter(m => m.Batizado === 'Sim').length;
     document.getElementById('batizados').textContent = batizados;
     
-    // Calcular aniversariantes do mês atual
     const hoje = new Date();
     const mesAtual = hoje.getMonth() + 1;
     const aniversariantes = membros.filter(m => {
@@ -387,25 +370,21 @@ function updateDashboard() {
     }).length;
     document.getElementById('aniversariantes').textContent = aniversariantes;
     
-    // Atualizar gráficos
     updateCharts();
 }
 
 function updateCharts() {
-    // Dados para gráfico de status (manter o status para o dashboard)
     const statusCounts = {
         'Ativo': membros.filter(m => m.Status === 'Ativo').length,
         'Inativo': membros.filter(m => m.Status === 'Inativo').length,
         'Falecido': membros.filter(m => m.Status === 'Falecido').length
     };
     
-    // Dados para gráfico de sexo
     const sexoCounts = {
         'Masculino': membros.filter(m => m.Sexo === 'Masculino').length,
         'Feminino': membros.filter(m => m.Sexo === 'Feminino').length
     };
     
-    // Destruir gráficos existentes se houver
     if (statusChart) {
         statusChart.destroy();
     }
@@ -413,7 +392,6 @@ function updateCharts() {
         sexoChart.destroy();
     }
     
-    // Criar gráfico de status
     const statusCtx = document.getElementById('statusChart').getContext('2d');
     statusChart = new Chart(statusCtx, {
         type: 'doughnut',
@@ -436,7 +414,6 @@ function updateCharts() {
         }
     });
     
-    // Criar gráfico de sexo
     const sexoCtx = document.getElementById('sexoChart').getContext('2d');
     sexoChart = new Chart(sexoCtx, {
         type: 'pie',
@@ -464,7 +441,6 @@ function renderMembrosTable() {
     const tableBody = document.getElementById('membrosTableBody');
     tableBody.innerHTML = '';
     
-    // Aplicar filtros
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const statusFilter = document.getElementById('statusFilter').value;
     const membroFilter = document.getElementById('membroFilter').value;
@@ -477,14 +453,12 @@ function renderMembrosTable() {
         return matchesSearch && matchesStatus && matchesMembro;
     });
     
-    // Calcular paginação
     const totalPages = Math.ceil(filteredMembros.length / itemsPerPage);
     if (currentPage > totalPages) currentPage = totalPages || 1;
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage, filteredMembros.length);
     const paginatedMembros = filteredMembros.slice(startIndex, endIndex);
     
-    // Preencher tabela
     paginatedMembros.forEach(membro => {
         const row = document.createElement('tr');
         const statusColor = membro.Status === 'Ativo' ? 'bg-success' : (membro.Status === 'Inativo' ? 'bg-secondary' : 'bg-danger');
@@ -507,7 +481,6 @@ function renderMembrosTable() {
         tableBody.appendChild(row);
     });
     
-    // Configurar botões de edição e exclusão
     document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const memberId = this.getAttribute('data-id');
@@ -522,7 +495,6 @@ function renderMembrosTable() {
         });
     });
     
-    // Atualizar paginação
     renderPagination(totalPages);
 }
 
@@ -532,7 +504,6 @@ function renderPagination(totalPages) {
     
     if (totalPages <= 1) return;
     
-    // Botão anterior
     const prevLi = document.createElement('li');
     prevLi.classList.add('page-item');
     if (currentPage === 1) prevLi.classList.add('disabled');
@@ -546,7 +517,6 @@ function renderPagination(totalPages) {
     });
     pagination.appendChild(prevLi);
     
-    // Números das páginas (limitar exibidos para não poluir a UI se muitas páginas)
     const maxPagesToShow = 7;
     let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
@@ -566,7 +536,6 @@ function renderPagination(totalPages) {
         pagination.appendChild(pageLi);
     }
     
-    // Botão próximo
     const nextLi = document.createElement('li');
     nextLi.classList.add('page-item');
     if (currentPage === totalPages) nextLi.classList.add('disabled');
@@ -585,7 +554,6 @@ function editMembro(memberId) {
     const membro = membros.find(m => m.casdastro === memberId);
     if (!membro) return;
     
-    // Preencher o formulário com os dados do membro
     document.getElementById('modalTitle').textContent = 'Editar Membro';
     document.getElementById('membroId').value = memberId;
     document.getElementById('casdastro').value = membro.casdastro;
@@ -611,18 +579,15 @@ function editMembro(memberId) {
     document.getElementById('Nm_Mae').value = membro.Nm_Mae;
     document.getElementById('Nm_Pai').value = membro.Nm_Pai;
     
-    // Remover classes de validação
     document.getElementById('membroForm').classList.remove('was-validated');
     
-    // Abrir o modal
     const modal = new bootstrap.Modal(document.getElementById('adicionarMembroModal'));
     modal.show();
 }
 
-function saveMembro() {
+async function saveMembro() {
     const form = document.getElementById('membroForm');
     
-    // Validar formulário
     if (!form.checkValidity()) {
         form.classList.add('was-validated');
         return;
@@ -631,13 +596,6 @@ function saveMembro() {
     const memberId = document.getElementById('membroId').value;
     const casdastroValue = document.getElementById('casdastro').value;
 
-    // Verificar se o número de cadastro já existe para novos membros
-    if (!memberId && membros.some(m => m.casdastro === casdastroValue)) {
-        showErrorModal('Erro: O número de cadastro informado já existe.');
-        return;
-    }
-    
-    // Coletar dados do formulário
     const membroData = {
         casdastro: casdastroValue,
         Nm_Membro: document.getElementById('Nm_Membro').value,
@@ -663,35 +621,43 @@ function saveMembro() {
         Nm_Pai: document.getElementById('Nm_Pai').value,
     };
     
-    if (memberId) {
-        // Editar membro existente
-        const index = membros.findIndex(m => m.casdastro === memberId);
-        if (index !== -1) {
-            membros[index] = { ...membros[index], ...membroData };
+    try {
+        let response;
+        if (memberId) {
+            // Editar membro existente
+            response = await fetch('/api/membros', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(membroData)
+            });
+        } else {
+            // Adicionar novo membro
+            response = await fetch('/api/membros', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(membroData)
+            });
         }
-    } else {
-        // Adicionar novo membro
-        membros.push(membroData);
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Erro ao salvar o membro.');
+        }
+        
+        await fetchMembros();
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('adicionarMembroModal'));
+        modal.hide();
+        
+        document.getElementById('membroForm').reset();
+        document.getElementById('membroId').value = '';
+        form.classList.remove('was-validated');
+        
+        showSuccessModal('Registro salvo com sucesso!');
+    } catch (e) {
+        console.error('Erro ao salvar membro:', e);
+        showErrorModal('Erro ao salvar o registro: ' + e.message);
     }
-    
-    // Salvar no localStorage
-    localStorage.setItem('membrosData', JSON.stringify(membros));
-    
-    // Atualizar a interface
-    updateDashboard();
-    renderMembrosTable();
-    
-    // Fechar o modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('adicionarMembroModal'));
-    modal.hide();
-    
-    // Limpar o formulário
-    document.getElementById('membroForm').reset();
-    document.getElementById('membroId').value = '';
-    form.classList.remove('was-validated');
-    
-    // Mostrar mensagem de sucesso
-    showSuccessModal('Registro salvo com sucesso!');
 }
 
 function showSuccessModal(message) {
@@ -712,30 +678,32 @@ function showDeleteConfirm(memberId) {
     modal.show();
 }
 
-function confirmDelete() {
+async function confirmDelete() {
     if (!memberToDelete) return;
     
-    // Encontrar e remover o membro
-    const index = membros.findIndex(m => m.casdastro === memberToDelete);
-    if (index !== -1) {
-        membros.splice(index, 1);
+    try {
+        const response = await fetch('/api/membros', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ casdastro: memberToDelete })
+        });
         
-        // Salvar no localStorage
-        localStorage.setItem('membrosData', JSON.stringify(membros));
+        if (!response.ok) {
+            throw new Error('Erro ao excluir o membro.');
+        }
         
-        // Atualizar a interface
-        updateDashboard();
-        renderMembrosTable();
+        await fetchMembros();
         
-        // Mostrar mensagem de sucesso
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
+        modal.hide();
+        
         showSuccessModal('Membro excluído com sucesso!');
+    } catch (e) {
+        console.error('Erro ao excluir membro:', e);
+        showErrorModal('Erro ao excluir o registro: ' + e.message);
+    } finally {
+        memberToDelete = null;
     }
-    
-    // Fechar o modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
-    modal.hide();
-    
-    memberToDelete = null;
 }
 
 function generateReport() {
@@ -749,7 +717,6 @@ function generateReport() {
     let headers = [];
     
     if (reportType === 'aniversariantes') {
-        // Pergunta o mês ao usuário
         const mes = prompt("Digite o número do mês (1-12):");
         if (!mes || isNaN(mes) || mes < 1 || mes > 12) {
             showErrorModal("Mês inválido.");
@@ -763,7 +730,6 @@ function generateReport() {
             relatorioHeader.appendChild(th);
         });
 
-        // ordenar aniversariantes pelo dia do mês
         const aniversariantes = membros.filter(m => {
             if (!m.Data_Nasc) return false;
             const data = new Date(m.Data_Nasc);
@@ -793,28 +759,27 @@ function generateReport() {
         return;
     }
 
-    // Relatórios tradicionais (nominais)
     let field;
     switch (reportType) {
         case 'status':
-            headers = ['Status', 'Quantidade', 'Percentual', 'Nomes'];
             field = 'Status';
+            headers = ['Status', 'Quantidade', 'Percentual', 'Nomes'];
             break;
         case 'sexo':
-            headers = ['Sexo', 'Quantidade', 'Percentual', 'Nomes'];
             field = 'Sexo';
+            headers = ['Sexo', 'Quantidade', 'Percentual', 'Nomes'];
             break;
         case 'batismo':
-            headers = ['Batizado', 'Quantidade', 'Percentual', 'Nomes'];
             field = 'Batizado';
+            headers = ['Batizado', 'Quantidade', 'Percentual', 'Nomes'];
             break;
         case 'estadoCivil':
-            headers = ['Estado Civil', 'Quantidade', 'Percentual', 'Nomes'];
             field = 'Estado_Civil';
+            headers = ['Estado Civil', 'Quantidade', 'Percentual', 'Nomes'];
             break;
         case 'membro':
-            headers = ['Tipo de Membro', 'Quantidade', 'Percentual', 'Nomes'];
             field = 'Membro';
+            headers = ['Tipo de Membro', 'Quantidade', 'Percentual', 'Nomes'];
             break;
     }
     
@@ -842,13 +807,11 @@ function generateReport() {
 function calculatePercentage(data, field) {
     const counts = {};
     
-    // Contar ocorrências
     data.forEach(item => {
         const value = item[field] || 'Não informado';
         counts[value] = (counts[value] || 0) + 1;
     });
     
-    // Calcular percentuais
     const result = {};
     const total = data.length;
     
@@ -872,7 +835,6 @@ function exportReport() {
             return;
         }
 
-        // Ordenar por dia do mês antes de exportar
         const aniversariantes = membros.filter(m => {
             if (!m.Data_Nasc) return false;
             const data = new Date(m.Data_Nasc);
@@ -931,7 +893,6 @@ function exportReport() {
     for (const [key, value] of Object.entries(reportData)) {
         const nomes = membros.filter(m => (m[field] || 'Não informado') === key)
                                  .map(m => m.Nm_Membro).join("; ");
-        // escapar possíveis aspas no campo nomes
         const nomesEscapados = nomes.replace(/"/g, '""');
         csv += `"${key}",${value.count},${value.percentage}%,"${nomesEscapados}"\n`;
     }
@@ -960,9 +921,7 @@ function backupData() {
     membros.forEach(membro => {
         const row = headers.map(header => {
             const value = membro[header] || '';
-            // Substitui quebras de linha e aspas duplas por "aspas duplas"
             let escapedValue = String(value).replace(/"/g, '""').replace(/\r?\n|\r/g, ' ');
-            // Envolve o valor em aspas duplas, a menos que seja um número simples
             if (escapedValue.includes(';') || escapedValue.includes('"')) {
                 return `"${escapedValue}"`;
             } else {
@@ -996,6 +955,7 @@ function restoreData(evt) {
         return;
     }
     
+    // Agora o restore precisa de um arquivo JSON
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
@@ -1003,15 +963,26 @@ function restoreData(evt) {
             const restoredData = JSON.parse(contents);
             
             if (Array.isArray(restoredData)) {
-                membros = restoredData;
-                localStorage.setItem('membrosData', JSON.stringify(membros));
-                
-                updateDashboard();
-                renderMembrosTable();
-                
-                showSuccessModal('Dados restaurados com sucesso!');
+                // Enviar os dados para a API
+                fetch('/api/membros-bulk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(restoredData)
+                }).then(response => {
+                    if (response.ok) {
+                        return fetchMembros();
+                    } else {
+                        throw new Error('Erro ao restaurar dados via API.');
+                    }
+                }).then(() => {
+                    showSuccessModal('Dados restaurados com sucesso!');
+                }).catch(error => {
+                    console.error('Erro ao restaurar dados:', error);
+                    showErrorModal('Erro ao restaurar dados. Verifique se o arquivo e a API são válidos.');
+                });
+
             } else {
-                showErrorModal('O arquivo não contém dados válidos.');
+                showErrorModal('O arquivo não contém dados JSON válidos.');
             }
         } catch (error) {
             console.error('Erro ao restaurar dados:', error);
@@ -1020,6 +991,5 @@ function restoreData(evt) {
     };
     reader.readAsText(file);
     
-    // Limpar o input para permitir selecionar o mesmo arquivo novamente
     evt.target.value = '';
 }
