@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { db } from '@vercel/postgres';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
         }
 
         // Deletar todos os registros existentes antes de importar
-        await sql`TRUNCATE TABLE membros;`;
+        await db`TRUNCATE TABLE membros;`;
 
         // Preparar os valores para a inserção em massa
         const insertValues = membros.map(membro => {
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
             ) VALUES ${insertValues};
         `;
 
-        await sql.query(query);
+        await db.query(query);
 
         return res.status(200).json({ message: `${membros.length} registros importados com sucesso!` });
     } catch (error) {
