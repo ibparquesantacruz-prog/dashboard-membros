@@ -1,1745 +1,1071 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Igreja Batista Parque Santa Cruz</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --primary-color: #4e73df;
-            --secondary-color: #858796;
-            --success-color: #1cc88a;
-            --info-color: #36b9cc;
-            --warning-color: #f6c23e;
-            --danger-color: #e74a3b;
-            --light-bg: #f8f9fc;
-        }
-        
-        body {
-            background-color: var(--light-bg);
-            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .container-fluid {
-            flex: 1;
-        }
-        
-        .sidebar {
-            min-height: 100vh;
-            background: linear-gradient(180deg, var(--primary-color) 10%, #224abe 100%);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            z-index: 100;
-        }
-        
-        .sidebar-heading {
-            padding: 20px 0;
-            color: white;
-            text-align: center;
-            font-weight: 800;
-            font-size: 1.2rem;
-            letter-spacing: 1px;
-        }
-        
-        .nav-link {
-            color: rgba(255, 255, 255, 0.8);
-            padding: 1rem;
-            font-weight: 600;
-            transition: all 0.15s ease;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            color: white;
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        .nav-link i {
-            margin-right: 10px;
-        }
-        
-        .main-content {
-            margin-left: 220px;
-            padding: 20px;
-            width: calc(100% - 220px);
-        }
-        
-        .card-dashboard {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-            transition: transform 0.2s;
-        }
-        
-        .card-dashboard:hover {
-            transform: translateY(-5px);
-        }
-        
-        .card-header {
-            background-color: white;
-            border-bottom: 1px solid #e3e6f0;
-            font-weight: 700;
-        }
-        
-        .table-responsive {
-            max-height: 500px;
-            border-radius: 10px;
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
-        }
-        
-        #chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
-        
-        .bg-primary {
-            background-color: var(--primary-color) !important;
-        }
-        
-        .bg-success {
-            background-color: var(--success-color) !important;
-        }
-        
-        .bg-info {
-            background-color: var(--info-color) !important;
-        }
-        
-        .bg-warning {
-            background-color: var(--warning-color) !important;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        
-        .btn-primary:hover {
-            background-color: #3a5fc8;
-            border-color: #3a5fc8;
-        }
-        
-        .form-label.required::after {
-            content: " *";
-            color: #e74a3b;
-        }
-        
-        .invalid-feedback {
-            display: none;
-            color: #e74a3b;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-        
-        .was-validated .form-control:invalid, .form-control.is-invalid {
-            border-color: #e74a3b;
-        }
-        
-        .was-validated .form-control:invalid ~ .invalid-feedback, 
-        .form-control.is-invalid ~ .invalid-feedback {
-            display: block;
-        }
-        
-        .progress-bar {
-            transition: width 0.3s ease;
-        }
-        
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                position: relative;
-                min-height: auto;
-            }
-            
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-            }
-        }
-        
-        .debug-info {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 12px;
-            display: none;
-        }
-        
-        footer {
-            padding: 15px;
-            background-color: #e9eaf5;
-            color: #555;
-            text-align: center;
-            font-size: .8em;
-            width: 100%;
-            box-shadow: 0 -10px 5px rgba(0,0,0,.1);
-            position: sticky;
-            bottom: 0;
-            left: 0;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar px-0">
-                <div class="sidebar-heading">Igreja Batista Parque Santa Cruz</div>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#" data-bs-target="dashboard">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-target="membros">
-                            <i class="bi bi-people-fill"></i> Gerenciar Membros
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-target="relatorios">
-                            <i class="bi bi-bar-chart-fill"></i> Relatórios
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-target="importar">
-                            <i class="bi bi-upload"></i> Importar CSV
-                        </a>
-                    </li>
-                    <li class="nav-item mt-4">
-                        <a class="nav-link" href="#" id="backupBtn">
-                            <i class="bi bi-cloud-arrow-down"></i> Backup
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="restoreBtn">
-                            <i class="bi bi-cloud-arrow-up"></i> Restaurar
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content">
-                <!-- Dashboard Section -->
-                <div class="content-section" id="dashboard-section">
-                    <h2 class="mb-4">Dashboard</h2>
-                    
-                    <div class="row mb-4">
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card card-dashboard border-left-primary h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Total de Membros</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-membros">0</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="bi bi-people-fill fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card card-dashboard border-left-success h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Membros Ativos</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="ativos">0</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="bi bi-check-circle fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card card-dashboard border-left-info h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                Membros Batizados</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="batizados">0</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="bi bi-droplet fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card card-dashboard border-left-warning h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Aniversariantes</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="aniversariantes">0</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="bi bi-gift fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-lg-6 mb-4">
-                            <div class="card card-dashboard">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Status dos Membros</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div id="chart-container">
-                                        <canvas id="statusChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-lg-6 mb-4">
-                            <div class="card card-dashboard">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Distribuição por Sexo</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div id="chart-container">
-                                        <canvas id="sexoChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gerenciar Membros Section -->
-                <div class="content-section d-none" id="membros-section">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2>Gerenciar Membros</h2>
-                        <div>
-                            <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#adicionarMembroModal">
-                                <i class="bi bi-plus-circle me-1"></i> Adicionar Membro
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="card card-dashboard mb-4">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6 mb-2">
-                                    <input type="text" class="form-control" id="searchInput" placeholder="Buscar membro...">
-                                </div>
-                                <div class="col-md-3 mb-2">
-                                    <select class="form-select" id="statusFilter">
-                                        <option value="">Todos os status</option>
-                                        <option value="Ativo">Ativo</option>
-                                        <option value="Inativo">Inativo</option>
-                                        <option value="Falecido">Falecido</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3 mb-2">
-                                    <select class="form-select" id="membroFilter">
-                                        <option value="">Todos os tipos</option>
-                                        <option value="Sim">Membro</option>
-                                        <option value="Não">Não membro</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card card-dashboard">
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>Nome do Membro</th>
-                                            <th>Status</th>
-                                            <th>Sexo</th>
-                                            <th>Membro</th>
-                                            <th>Batizado</th>
-                                            <th>Celular</th>
-                                            <th>Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="membrosTableBody">
-                                        <!-- Os dados serão preenchidos via JavaScript -->
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <nav aria-label="Page navigation" class="mt-3">
-                                <ul class="pagination justify-content-center" id="pagination">
-                                    <!-- Paginação será gerada via JavaScript -->
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Relatórios Section -->
-                <div class="content-section d-none" id="relatorios-section">
-                    <h2 class="mb-4">Relatórios</h2>
-                    
-                    <div class="card card-dashboard mb-4">
-                        <div class="card-header py-3">
-                            <h5 class="m-0 font-weight-bold text-primary">Gerar Relatório</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-4 mb-2">
-                                    <select class="form-select" id="relatorioTipo">
-                                        <option value="status">Por Status</option>
-                                        <option value="sexo">Por Sexo</option>
-                                        <option value="batismo">Por Batismo</option>
-                                        <option value="estadoCivil">Por Estado Civil</option>
-                                        <option value="membro">Por Tipo de Membro</option>
-                                        <option value="aniversariantes">Aniversariantes</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4 mb-2">
-                                    <button class="btn btn-primary w-100" id="gerarRelatorioBtn">Gerar Relatório</button>
-                                </div>
-                                <div class="col-md-4 mb-2">
-                                    <button class="btn btn-success w-100" id="exportarRelatorioBtn">Exportar para CSV</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card card-dashboard">
-                        <div class="card-header py-3">
-                            <h5 class="m-0 font-weight-bold text-primary">Resultado do Relatório</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead class="table-dark">
-                                        <tr id="relatorioHeader">
-                                            <!-- Cabeçalho será gerado via JavaScript -->
-                                        </tr>
-                                    </thead>
-                                    <tbody id="relatorioBody">
-                                        <!-- Dados do relatório serão preenchidos via JavaScript -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Importar CSV Section -->
-                <div class="content-section d-none" id="importar-section">
-                    <h2 class="mb-4">Importar Dados de CSV</h2>
-                    
-                    <div class="card card-dashboard mb-4">
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="csvFile" class="form-label">Selecione o arquivo CSV</label>
-                                <input class="form-control" type="file" id="csvFile" accept=".csv">
-                            </div>
-                            <button class="btn btn-primary" id="importCsvBtn">Importar CSV</button>
-                            <button class="btn btn-secondary ms-2" id="clearCsvBtn">Limpar</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Barra de progresso e status -->
-                    <div class="card card-dashboard mb-4 d-none" id="importStatusCard">
-                        <div class="card-header py-3">
-                            <h5 class="m-0 font-weight-bold text-primary">Status da Importação</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="progress mb-3" style="height: 20px;">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                                     role="progressbar" style="width: 0%" 
-                                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="importProgress">
-                                    0%
-                                </div>
-                            </div>
-                            <div id="importStatusText">Preparando importação...</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Debug info -->
-                    <div class="debug-info" id="debugInfo">
-                        <h6>Informações de Debug:</h6>
-                        <div id="debugContent"></div>
-                    </div>
-                    
-                    <div class="card card-dashboard">
-                        <div class="card-header py-3">
-                            <h5 class="m-0 font-weight-bold text-primary">Visualização Prévia dos Dados</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>Nm_Membro</th>
-                                            <th>Status</th>
-                                            <th>Sexo</th>
-                                            <th>Membro</th>
-                                            <th>Batizado</th>
-                                            <th>Celular</th>
-                                            <th>Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="previewTableBody">
-                                        <!-- Visualização prévia será preenchida via JavaScript -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para Adicionar/Editar Membro -->
-    <div class="modal fade" id="adicionarMembroModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalTitle">Adicionar Novo Membro</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="membroForm" class="needs-validation" novalidate>
-                        <input type="hidden" id="membroId">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="casdastro" class="form-label required">Cadastro</label>
-                                <input type="text" class="form-control" id="casdastro" required>
-                                <div class="invalid-feedback">Por favor, informe o número de cadastro.</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="Nm_Membro" class="form-label required">Nome do Membro</label>
-                                <input type="text" class="form-control" id="Nm_Membro" required>
-                                <div class="invalid-feedback">Por favor, informe o nome.</div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="Status" class="form-label required">Status</label>
-                                <select class="form-select" id="Status" required>
-                                    <option value="">Selecione...</option>
-                                    <option value="Ativo">Ativo</option>
-                                    <option value="Inativo">Inativo</option>
-                                    <option value="Falecido">Falecido</option>
-                                </select>
-                                <div class="invalid-feedback">Por favor, selecione o status.</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="Sexo" class="form-label required">Sexo</label>
-                                <select class="form-select" id="Sexo" required>
-                                    <option value="">Selecione...</option>
-                                    <option value="Masculino">Masculino</option>
-                                    <option value="Feminino">Feminino</option>
-                                </select>
-                                <div class="invalid-feedback">Por favor, selecione o sexo.</div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="Membro" class="form-label required">Membro</label>
-                                <select class="form-select" id="Membro" required>
-                                    <option value="">Selecione...</option>
-                                    <option value="Sim">Sim</option>
-                                    <option value="Não">Não</option>
-                                </select>
-                                <div class="invalid-feedback">Por favor, selecione se é membro.</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="Batizado" class="form-label required">Batizado</label>
-                                <select class="form-select" id="Batizado" required>
-                                    <option value="">Selecione...</option>
-                                    <option value="Sim">Sim</option>
-                                    <option value="Não">Não</option>
-                                </select>
-                                <div class="invalid-feedback">Por favor, selecione se é batizado.</div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="Celular" class="form-label">Celular</label>
-                                <input type="text" class="form-control" id="Celular" placeholder="(11) 99999-9999">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="Data_Nasc" class="form-label">Data de Nascimento</label>
-                                <input type="date" class="form-control" id="Data_Nasc">
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="CPF" class="form-label">CPF</label>
-                                <input type="text" class="form-control" id="CPF" placeholder="000.000.000-00">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="Naturalidade" class="form-label">Naturalidade</label>
-                                <input type="text" class="form-control" id="Naturalidade">
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="Estado_Civil" class="form-label">Estado Civil</label>
-                                <select class="form-select" id="Estado_Civil">
-                                    <option value="">Selecione...</option>
-                                    <option value="Solteiro">Solteiro(a)</option>
-                                    <option value="Casado">Casado(a)</option>
-                                    <option value="Divorciado">Divorciado(a)</option>
-                                    <option value="Viúvo">Viúvo(a)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="Escolaridade" class="form-label">Escolaridade</label>
-                                <input type="text" class="form-control" id="Escolaridade">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="Profissao" class="form-label">Profissão</label>
-                                <input type="text" class="form-control" id="Profissao">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="Nm_Conjuge" class="form-label">Nome do Cônjuge</label>
-                                <input type="text" class="form-control" id="Nm_Conjuge">
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="Endereco" class="form-label">Endereço</label>
-                            <input type="text" class="form-control" id="Endereco" placeholder="Rua, número">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="Comp_Endereco" class="form-label">Complemento</label>
-                            <input type="text" class="form-control" id="Comp_Endereco" placeholder="Apto, Bloco, Casa">
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="Bairro" class="form-label">Bairro</label>
-                                <input type="text" class="form-control" id="Bairro">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="Cidade" class="form-label">Cidade</label>
-                                <input type="text" class="form-control" id="Cidade">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="CEP" class="form-label">CEP</label>
-                                <input type="text" class="form-control" id="CEP">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="Nm_Mae" class="form-label">Nome da Mãe</label>
-                                <input type="text" class="form-control" id="Nm_Mae">
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="Nm_Pai" class="form-label">Nome do Pai</label>
-                            <input type="text" class="form-control" id="Nm_Pai">
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="Tem_Filhos" class="form-label required">Tem Filhos</label>
-                                <select class="form-select" id="Tem_Filhos" required>
-                                    <option value="">Selecione...</option>
-                                    <option value="Sim">Sim</option>
-                                    <option value="Não">Não</option>
-                                </select>
-                                <div class="invalid-feedback">Por favor, selecione se tem filhos.</div>
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="saveMembroBtn">Salvar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Confirmação de Exclusão -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmar Exclusão</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Tem certeza que deseja excluir este membro?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Excluir</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Sucesso -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">Sucesso</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p id="successMessage">Operação realizada com sucesso!</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Input oculto para restaurar backup -->
-    <input type="file" id="restoreFile" accept=".json" style="display: none;">
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Variáveis globais
-        let membros = [];
-        let currentPage = 1;
-        const itemsPerPage = 10;
-        let memberToDelete = null;
-        let statusChart, sexoChart;
-
-        // Mapeamento dos campos do CSV para os campos do sistema
-        const fieldMapping = {
-            'casdastro': 'casdastro',
-            'Nm_Membro': 'Nm_Membro',
-            'Status': 'Status',
-            'Tem_Filhos': 'Tem_Filhos',
-            'Sexo': 'Sexo',
-            'Membro': 'Membro',
-            'Batizado': 'Batizado',
-            'Celular': 'Celular',
-            'Data_Nasc': 'Data_Nasc',
-            'CPF': 'CPF',
-            'Naturalidade': 'Naturalidade',
-            'Estado_Civil': 'Estado_Civil',
-            'Escolaridade': 'Escolaridade',
-            'Profissao': 'Profissao',
-            'Nm_Conjuge': 'Nm_Conjuge',
-            'Endereco': 'Endereco',
-            'Comp_Endereco': 'Comp_Endereco',
-            'Bairro': 'Bairro',
-            'Cidade': 'Cidade',
-            'CEP': 'CEP',
-            'Nm_Mae': 'Nm_Mae',
-            'Nm_Pai': 'Nm_Pai'
-        };
-
-        // Inicialização quando o documento estiver pronto
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
-        });
-
-        function initializeApp() {
-            // Carregar dados do localStorage se existirem
-            const savedData = localStorage.getItem('membrosData');
-            if (savedData) {
-                try {
-                    membros = JSON.parse(savedData);
-                    updateDashboard();
-                    renderMembrosTable();
-                } catch (e) {
-                    console.error('Erro ao carregar dados:', e);
-                    membros = [];
-                }
-            }
-
-            // Configurar navegação
-            setupNavigation();
-
-            // Configurar eventos
-            setupEventListeners();
-        }
-
-        function setupNavigation() {
-            // Navegação do menu lateral
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const target = this.getAttribute('data-bs-target');
-                    
-                    // Ativar link clicado e desativar outros
-                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Mostrar seção correspondente e esconder outras
-                    document.querySelectorAll('.content-section').forEach(section => {
-                        section.classList.add('d-none');
-                    });
-                    document.getElementById(`${target}-section`).classList.remove('d-none');
-                });
-            });
-        }
-
-        function setupEventListeners() {
-            // Importar CSV
-            document.getElementById('importCsvBtn').addEventListener('click', importCSV);
-            document.getElementById('clearCsvBtn').addEventListener('click', clearCSV);
-            
-            // Buscar membros
-            document.getElementById('searchInput').addEventListener('input', renderMembrosTable);
-            document.getElementById('statusFilter').addEventListener('change', renderMembrosTable);
-            document.getElementById('membroFilter').addEventListener('change', renderMembrosTable);
-            
-            // Salvar membro
-            document.getElementById('saveMembroBtn').addEventListener('click', saveMembro);
-            
-            // Gerar relatório
-            document.getElementById('gerarRelatorioBtn').addEventListener('click', generateReport);
-            document.getElementById('exportarRelatorioBtn').addEventListener('click', exportReport);
-            
-            // Confirmação de exclusão
-            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
-            
-            // Backup e restauração
-            document.getElementById('backupBtn').addEventListener('click', backupData);
-            document.getElementById('restoreBtn').addEventListener('click', triggerRestore);
-            document.getElementById('restoreFile').addEventListener('change', restoreData);
-        }
-
-        function importCSV() {
-            const fileInput = document.getElementById('csvFile');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                alert('Por favor, selecione um arquivo CSV.');
-                return;
-            }
-            
-            // Mostrar barra de progresso
-            const statusCard = document.getElementById('importStatusCard');
-            const progressBar = document.getElementById('importProgress');
-            const statusText = document.getElementById('importStatusText');
-            
-            statusCard.classList.remove('d-none');
-            progressBar.style.width = '10%';
-            progressBar.textContent = '10%';
-            statusText.textContent = 'Iniciando importação...';
-
-            // Primeiro, fazer debug do arquivo
-            debugCSV(file);
-
-            // Configurações robustas para o PapaParse
-            Papa.parse(file, {
-                header: true,
-                delimiter: ';', // Força ponto e vírgula como delimitador
-                newline: '\n',
-                encoding: 'UTF-8',
-                skipEmptyLines: true,
-                transformHeader: function(header) {
-                    // Normaliza os cabeçalhos para remover acentos e espaços, e manter a capitalização
-                    const normalizedHeader = header.trim().replace(/\s+/g, '_');
-                    return normalizedHeader;
-                },
-                complete: function(results) {
-                    console.log('Resultado completo do parsing:', results);
-                    
-                    if (results.data && results.data.length > 0) {
-                        // Atualizar progresso
-                        progressBar.style.width = '100%';
-                        progressBar.textContent = '100%';
-                        statusText.textContent = 'Processamento concluído!';
-                        
-                        // Processar dados
-                        const novosMembros = results.data.map((row, index) => {
-                            let memberData = {};
-                            for (const key in fieldMapping) {
-                                // Mapeia o cabeçalho do arquivo para o campo do sistema
-                                memberData[key] = row[key] || '';
-                            }
-                            
-                            // Padroniza os valores de "Sim" e "Não"
-                            if (row.Se_Pai && normalizeYesNo(row.Se_Pai) === 'Sim' || row.Se_Mae && normalizeYesNo(row.Se_Mae) === 'Sim') {
-                                memberData.Tem_Filhos = 'Sim';
-                            } else {
-                                memberData.Tem_Filhos = 'Não';
-                            }
-
-                            if (memberData.Sexo) memberData.Sexo = normalizeSexo(memberData.Sexo);
-                            if (memberData.Membro) memberData.Membro = normalizeYesNo(memberData.Membro);
-                            if (memberData.Batizado) memberData.Batizado = normalizeYesNo(memberData.Batizado);
-
-                            // Adiciona o campo de status
-                            if(row.Status) {
-                                memberData.Status = normalizeStatus(row.Status);
-                            } else {
-                                memberData.Status = 'Ativo';
-                            }
-
-                            // Formatar data se existir
-                            if (memberData.Data_Nasc) {
-                                memberData.Data_Nasc = formatarData(memberData.Data_Nasc);
-                            }
-                            
-                            // Formatar CPF se existir
-                            if (memberData.CPF) {
-                                memberData.CPF = formatarCPF(memberData.CPF.toString());
-                            }
-                            
-                            return memberData;
-                        }).filter(membro => membro.Nm_Membro); // Remove linhas vazias
-                        
-                        console.log('Membros processados:', novosMembros);
-                        
-                        if (novosMembros.length > 0) {
-                            membros = novosMembros;
-                            
-                            // Salvar no localStorage
-                            localStorage.setItem('membrosData', JSON.stringify(membros));
-                            
-                            // Atualizar a interface
-                            updateDashboard();
-                            renderMembrosTable();
-                            
-                            // Mostrar preview
-                            showPreview();
-                            
-                            // Mostrar mensagem de sucesso
-                            showSuccessModal('Importação concluída com sucesso! ' + membros.length + ' registros processados.');
-                        } else {
-                            alert('Nenhum dado válido encontrado no arquivo.');
-                        }
-                        
-                    } else {
-                        let errorMsg = 'O arquivo CSV está vazio ou não pôde ser processado.';
-                        if (results.errors && results.errors.length) {
-                            errorMsg += '\nErros: ' + results.errors.map(e => e.message).join(', ');
-                        }
-                        alert(errorMsg);
-                        console.error('Erros do PapaParse:', results.errors);
-                    }
-                    
-                    // Esconder barra de progresso após 2 segundos
-                    setTimeout(() => {
-                        statusCard.classList.add('d-none');
-                    }, 2000);
-                    
-                    // Limpar o input
-                    fileInput.value = '';
-                },
-                error: function(error) {
-                    console.error('Erro ao processar CSV:', error);
-                    alert('Erro ao processar o arquivo CSV: ' + error.message);
-                    fileInput.value = '';
-                    statusCard.classList.add('d-none');
-                }
-            });
-        }
-
-        // Função para normalizar valores para "Sim" ou "Não"
-        function normalizeYesNo(value) {
-            const lowerValue = String(value).toLowerCase().trim();
-            if (lowerValue === 'sim' || lowerValue === 's') {
-                return 'Sim';
-            }
-            if (lowerValue === 'nao' || lowerValue === 'não' || lowerValue === 'n') {
-                return 'Não';
-            }
-            return value;
-        }
-
-        // Função para normalizar valores de sexo
-        function normalizeSexo(value) {
-            const lowerValue = String(value).toLowerCase().trim();
-            if (lowerValue === 'masculino' || lowerValue === 'm') {
-                return 'Masculino';
-            }
-            if (lowerValue === 'feminino' || lowerValue === 'f') {
-                return 'Feminino';
-            }
-            return value;
-        }
-
-        // Função para normalizar valores de status
-        function normalizeStatus(value) {
-            const lowerValue = String(value).toLowerCase().trim();
-            if (lowerValue === 'ativo' || lowerValue === 'a') {
-                return 'Ativo';
-            }
-            if (lowerValue === 'inativo' || lowerValue === 'i') {
-                return 'Inativo';
-            }
-            if (lowerValue === 'falecido' || lowerValue === 'f') {
-                return 'Falecido';
-            }
-            return value;
-        }
-
-        function debugCSV(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                console.log('Conteúdo bruto do arquivo:');
-                console.log(content);
-                
-                // Mostrar informações de debug na interface
-                const debugInfo = document.getElementById('debugInfo');
-                const debugContent = document.getElementById('debugContent');
-                
-                debugInfo.style.display = 'block';
-                debugContent.innerHTML = `
-                    <p><strong>Primeiras 5 linhas:</strong></p>
-                    <pre>${content.split('\n').slice(0, 5).join('\n')}</pre>
-                    <p><strong>Tamanho do arquivo:</strong> ${content.length} caracteres</p>
-                    <p><strong>Número de linhas:</strong> ${content.split('\n').length}</p>
-                `;
-            };
-            reader.readAsText(file);
-        }
-
-        function formatarData(data) {
-            if (!data) return '';
-            
-            // Se já estiver no formato YYYY-MM-DD
-            if (/^\d{4}-\d{2}-\d{2}$/.test(data)) {
-                return data;
-            }
-            
-            // Se estiver no formato DD/MM/YYYY
-            if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
-                const partes = data.split('/');
-                return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
-            }
-            
-            // Se for uma data válida
-            try {
-                const dataObj = new Date(data);
-                if (!isNaN(dataObj.getTime())) {
-                    return dataObj.toISOString().split('T')[0];
-                }
-            } catch (e) {
-                console.error('Erro ao formatar data:', e);
-            }
-            
-            return data; // Retorna original se não conseguir formatar
-        }
-
-        function formatarCPF(cpf) {
-            if (!cpf) return '';
-            
-            // Remove caracteres não numéricos
-            cpf = cpf.toString().replace(/\D/g, '');
-            
-            // Formata no padrão 000.000.000-00
-            if (cpf.length === 11) {
-                return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-            }
-            
-            return cpf; // Retorna original se não tiver 11 dígitos
-        }
-
-        function clearCSV() {
-            document.getElementById('csvFile').value = '';
-            document.getElementById('previewTableBody').innerHTML = '';
-            document.getElementById('importStatusCard').classList.add('d-none');
-            document.getElementById('debugInfo').style.display = 'none';
-        }
-
-        function showPreview() {
-            const previewBody = document.getElementById('previewTableBody');
-            previewBody.innerHTML = '';
-            
-            // Mostrar apenas os primeiros 5 registros para preview
-            const previewData = membros.slice(0, 5);
-            
-            previewData.forEach(membro => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${membro.Nm_Membro}</td>
-                    <td><span class="badge ${membro.Status === 'Ativo' ? 'bg-success' : membro.Status === 'Inativo' ? 'bg-secondary' : 'bg-danger'}">${membro.Status}</span></td>
-                    <td>${membro.Sexo}</td>
-                    <td>${membro.Membro}</td>
-                    <td>${membro.Batizado}</td>
-                    <td>${membro.Celular}</td>
-                    <td>${membro.Status}</td>
-                `;
-                previewBody.appendChild(row);
-            });
-        }
-
-        function updateDashboard() {
-            // Atualizar estatísticas
-            document.getElementById('total-membros').textContent = membros.length;
-            
-            const ativos = membros.filter(m => m.Status === 'Ativo').length;
-            document.getElementById('ativos').textContent = ativos;
-            
-            const batizados = membros.filter(m => m.Batizado === 'Sim').length;
-            document.getElementById('batizados').textContent = batizados;
-            
-            // Calcular aniversariantes do mês atual
-            const hoje = new Date();
-            const mesAtual = hoje.getMonth() + 1;
-            const aniversariantes = membros.filter(m => {
-                if (!m.Data_Nasc) return false;
-                const dataNasc = new Date(m.Data_Nasc);
-                return dataNasc.getMonth() + 1 === mesAtual;
-            }).length;
-            document.getElementById('aniversariantes').textContent = aniversariantes;
-            
-            // Atualizar gráficos
-            updateCharts();
-        }
-
-        function updateCharts() {
-            // Dados para gráfico de status (manter o status para o dashboard)
-            const statusCounts = {
-                'Ativo': membros.filter(m => m.Status === 'Ativo').length,
-                'Inativo': membros.filter(m => m.Status === 'Inativo').length,
-                'Falecido': membros.filter(m => m.Status === 'Falecido').length
-            };
-            
-            // Dados para gráfico de sexo
-            const sexoCounts = {
-                'Masculino': membros.filter(m => m.Sexo === 'Masculino').length,
-                'Feminino': membros.filter(m => m.Sexo === 'Feminino').length
-            };
-            
-            // Destruir gráficos existentes se houver
-            if (statusChart) {
-                statusChart.destroy();
-            }
-            if (sexoChart) {
-                sexoChart.destroy();
-            }
-            
-            // Criar gráfico de status
-            const statusCtx = document.getElementById('statusChart').getContext('2d');
-            statusChart = new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Ativo', 'Inativo', 'Falecido'],
-                    datasets: [{
-                        data: [statusCounts.Ativo, statusCounts.Inativo, statusCounts.Falecido],
-                        backgroundColor: ['#4e73df', '#858796', '#e74a3b'],
-                        hoverBackgroundColor: ['#2e59d9', '#60616f', '#e74a3b'],
-                        hoverBorderColor: "rgba(234, 236, 244, 1)",
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-            
-            // Criar gráfico de sexo
-            const sexoCtx = document.getElementById('sexoChart').getContext('2d');
-            sexoChart = new Chart(sexoCtx, {
-                type: 'pie',
-                data: {
-                    labels: ['Masculino', 'Feminino'],
-                    datasets: [{
-                        data: [sexoCounts.Masculino, sexoCounts.Feminino],
-                        backgroundColor: ['#4e73df', '#36b9cc'],
-                        hoverBackgroundColor: ['#2e59d9', '#2c9faf'],
-                        hoverBorderColor: "rgba(234, 236, 244, 1)",
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-        }
-
-        function renderMembrosTable() {
-            const tableBody = document.getElementById('membrosTableBody');
-            tableBody.innerHTML = '';
-            
-            // Aplicar filtros
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const membroFilter = document.getElementById('membroFilter').value;
-            
-            let filteredMembros = membros.filter(membro => {
-                const matchesSearch = membro.Nm_Membro.toLowerCase().includes(searchTerm);
-                const matchesStatus = statusFilter === '' || membro.Status === statusFilter;
-                const matchesMembro = membroFilter === '' || membro.Membro === membroFilter;
-                
-                return matchesSearch && matchesStatus && matchesMembro;
-            });
-            
-            // Calcular paginação
-            const totalPages = Math.ceil(filteredMembros.length / itemsPerPage);
-            if (currentPage > totalPages) currentPage = totalPages || 1;
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = Math.min(startIndex + itemsPerPage, filteredMembros.length);
-            const paginatedMembros = filteredMembros.slice(startIndex, endIndex);
-            
-            // Preencher tabela
-            paginatedMembros.forEach(membro => {
-                const row = document.createElement('tr');
-                const statusColor = membro.Status === 'Ativo' ? 'bg-success' : (membro.Status === 'Inativo' ? 'bg-secondary' : 'bg-danger');
-                row.innerHTML = `
-                    <td>${membro.Nm_Membro}</td>
-                    <td><span class="badge ${statusColor}">${membro.Status}</span></td>
-                    <td>${membro.Sexo}</td>
-                    <td>${membro.Membro}</td>
-                    <td>${membro.Batizado}</td>
-                    <td>${membro.Celular}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary edit-btn" data-id="${membro.casdastro}">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${membro.casdastro}">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-            
-            // Configurar botões de edição e exclusão
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const memberId = this.getAttribute('data-id');
-                    editMembro(memberId);
-                });
-            });
-            
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const memberId = this.getAttribute('data-id');
-                    showDeleteConfirm(memberId);
-                });
-            });
-            
-            // Atualizar paginação
-            renderPagination(totalPages);
-        }
-
-        function renderPagination(totalPages) {
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
-            
-            if (totalPages <= 1) return;
-            
-            // Botão anterior
-            const prevLi = document.createElement('li');
-            prevLi.classList.add('page-item');
-            if (currentPage === 1) prevLi.classList.add('disabled');
-            prevLi.innerHTML = `<a class="page-link" href="#">Anterior</a>`;
-            prevLi.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderMembrosTable();
-                }
-            });
-            pagination.appendChild(prevLi);
-            
-            // Números das páginas (limitar exibidos para não poluir a UI se muitas páginas)
-            const maxPagesToShow = 7;
-            let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-            let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-            if (endPage - startPage + 1 < maxPagesToShow) {
-                startPage = Math.max(1, endPage - maxPagesToShow + 1);
-            }
-            for (let i = startPage; i <= endPage; i++) {
-                const pageLi = document.createElement('li');
-                pageLi.classList.add('page-item');
-                if (currentPage === i) pageLi.classList.add('active');
-                pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-                pageLi.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    currentPage = i;
-                    renderMembrosTable();
-                });
-                pagination.appendChild(pageLi);
-            }
-            
-            // Botão próximo
-            const nextLi = document.createElement('li');
-            nextLi.classList.add('page-item');
-            if (currentPage === totalPages) nextLi.classList.add('disabled');
-            nextLi.innerHTML = `<a class="page-link" href="#">Próximo</a>`;
-            nextLi.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    renderMembrosTable();
-                }
-            });
-            pagination.appendChild(nextLi);
-        }
-
-        function editMembro(memberId) {
-            const membro = membros.find(m => m.casdastro === memberId);
-            if (!membro) return;
-            
-            // Preencher o formulário com os dados do membro
-            document.getElementById('modalTitle').textContent = 'Editar Membro';
-            document.getElementById('membroId').value = memberId;
-            document.getElementById('casdastro').value = membro.casdastro;
-            document.getElementById('Nm_Membro').value = membro.Nm_Membro;
-            document.getElementById('Status').value = membro.Status;
-            document.getElementById('Tem_Filhos').value = membro.Tem_Filhos;
-            document.getElementById('Sexo').value = membro.Sexo;
-            document.getElementById('Membro').value = membro.Membro;
-            document.getElementById('Batizado').value = membro.Batizado;
-            document.getElementById('Celular').value = membro.Celular;
-            document.getElementById('Data_Nasc').value = membro.Data_Nasc;
-            document.getElementById('CPF').value = membro.CPF;
-            document.getElementById('Naturalidade').value = membro.Naturalidade;
-            document.getElementById('Estado_Civil').value = membro.Estado_Civil;
-            document.getElementById('Escolaridade').value = membro.Escolaridade;
-            document.getElementById('Profissao').value = membro.Profissao;
-            document.getElementById('Nm_Conjuge').value = membro.Nm_Conjuge;
-            document.getElementById('Endereco').value = membro.Endereco;
-            document.getElementById('Comp_Endereco').value = membro.Comp_Endereco;
-            document.getElementById('Bairro').value = membro.Bairro;
-            document.getElementById('Cidade').value = membro.Cidade;
-            document.getElementById('CEP').value = membro.CEP;
-            document.getElementById('Nm_Mae').value = membro.Nm_Mae;
-            document.getElementById('Nm_Pai').value = membro.Nm_Pai;
-            
-            // Remover classes de validação
-            document.getElementById('membroForm').classList.remove('was-validated');
-            
-            // Abrir o modal
-            const modal = new bootstrap.Modal(document.getElementById('adicionarMembroModal'));
-            modal.show();
-        }
-
-        function saveMembro() {
-            const form = document.getElementById('membroForm');
-            
-            // Validar formulário
-            if (!form.checkValidity()) {
-                form.classList.add('was-validated');
-                return;
-            }
-            
-            // Coletar dados do formulário
-            const memberId = document.getElementById('membroId').value;
-            const membroData = {
-                casdastro: document.getElementById('casdastro').value,
-                Nm_Membro: document.getElementById('Nm_Membro').value,
-                Status: document.getElementById('Status').value,
-                Tem_Filhos: document.getElementById('Tem_Filhos').value,
-                Sexo: document.getElementById('Sexo').value,
-                Membro: document.getElementById('Membro').value,
-                Batizado: document.getElementById('Batizado').value,
-                Celular: document.getElementById('Celular').value,
-                Data_Nasc: document.getElementById('Data_Nasc').value,
-                CPF: document.getElementById('CPF').value,
-                Naturalidade: document.getElementById('Naturalidade').value,
-                Estado_Civil: document.getElementById('Estado_Civil').value,
-                Escolaridade: document.getElementById('Escolaridade').value,
-                Profissao: document.getElementById('Profissao').value,
-                Nm_Conjuge: document.getElementById('Nm_Conjuge').value,
-                Endereco: document.getElementById('Endereco').value,
-                Comp_Endereco: document.getElementById('Comp_Endereco').value,
-                Bairro: document.getElementById('Bairro').value,
-                Cidade: document.getElementById('Cidade').value,
-                CEP: document.getElementById('CEP').value,
-                Nm_Mae: document.getElementById('Nm_Mae').value,
-                Nm_Pai: document.getElementById('Nm_Pai').value,
-            };
-            
-            if (memberId) {
-                // Editar membro existente
-                const index = membros.findIndex(m => m.casdastro === memberId);
-                if (index !== -1) {
-                    membros[index] = { ...membros[index], ...membroData };
-                }
-            } else {
-                // Adicionar novo membro
-                membros.push(membroData);
-            }
-            
-            // Salvar no localStorage
-            localStorage.setItem('membrosData', JSON.stringify(membros));
-            
-            // Atualizar a interface
-            updateDashboard();
-            renderMembrosTable();
-            
-            // Fechar o modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('adicionarMembroModal'));
-            modal.hide();
-            
-            // Limpar o formulário
-            document.getElementById('membroForm').reset();
-            document.getElementById('membroId').value = '';
-            form.classList.remove('was-validated');
-            
-            // Mostrar mensagem de sucesso
-            showSuccessModal('Registro salvo com sucesso!');
-        }
-
-        function showSuccessModal(message) {
-            document.getElementById('successMessage').textContent = message;
-            const modal = new bootstrap.Modal(document.getElementById('successModal'));
-            modal.show();
-        }
-
-        function showDeleteConfirm(memberId) {
-            memberToDelete = memberId;
-            const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
-            modal.show();
-        }
-
-        function confirmDelete() {
-            if (!memberToDelete) return;
-            
-            // Encontrar e remover o membro
-            const index = membros.findIndex(m => m.casdastro === memberToDelete);
-            if (index !== -1) {
-                membros.splice(index, 1);
-                
-                // Salvar no localStorage
-                localStorage.setItem('membrosData', JSON.stringify(membros));
-                
-                // Atualizar a interface
-                updateDashboard();
-                renderMembrosTable();
-                
-                // Mostrar mensagem de sucesso
-                showSuccessModal('Membro excluído com sucesso!');
-            }
-            
-            // Fechar o modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
-            modal.hide();
-            
-            memberToDelete = null;
-        }
-
-        function generateReport() {
-            const reportType = document.getElementById('relatorioTipo').value;
-            const relatorioHeader = document.getElementById('relatorioHeader');
-            const relatorioBody = document.getElementById('relatorioBody');
-            
-            relatorioHeader.innerHTML = '';
-            relatorioBody.innerHTML = '';
-            
-            let headers = [];
-            
-            if (reportType === 'aniversariantes') {
-                // Pergunta o mês ao usuário
-                const mes = prompt("Digite o número do mês (1-12):");
-                if (!mes || isNaN(mes) || mes < 1 || mes > 12) {
-                    alert("Mês inválido.");
-                    return;
-                }
-
-                headers = ['Nome do Membro', 'Data de Nascimento'];
-                headers.forEach(header => {
-                    const th = document.createElement('th');
-                    th.textContent = header;
-                    relatorioHeader.appendChild(th);
-                });
-
-                // ordenar aniversariantes pelo dia do mês
-                const aniversariantes = membros.filter(m => {
-                    if (!m.Data_Nasc) return false;
-                    const data = new Date(m.Data_Nasc);
-                    return (data.getMonth() + 1) == mes;
-                }).sort((a,b) => {
-                    const da = new Date(a.Data_Nasc).getDate();
-                    const db = new Date(b.Data_Nasc).getDate();
-                    return da - db;
-                });
-
-                if (aniversariantes.length === 0) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td colspan="2">Nenhum aniversariante encontrado para o mês ${mes}.</td>`;
-                    relatorioBody.appendChild(row);
-                    return;
-                }
-
-                aniversariantes.forEach(m => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${m.Nm_Membro}</td>
-                        <td>${m.Data_Nasc}</td>
-                    `;
-                    relatorioBody.appendChild(row);
-                });
-
-                return;
-            }
-
-            // Relatórios tradicionais (nominais)
-            let field;
-            switch (reportType) {
-                case 'status':
-                    headers = ['Status', 'Quantidade', 'Percentual', 'Nomes'];
-                    field = 'Status';
-                    break;
-                case 'sexo':
-                    headers = ['Sexo', 'Quantidade', 'Percentual', 'Nomes'];
-                    field = 'Sexo';
-                    break;
-                case 'batismo':
-                    headers = ['Batizado', 'Quantidade', 'Percentual', 'Nomes'];
-                    field = 'Batizado';
-                    break;
-                case 'estadoCivil':
-                    headers = ['Estado Civil', 'Quantidade', 'Percentual', 'Nomes'];
-                    field = 'Estado_Civil';
-                    break;
-                case 'membro':
-                    headers = ['Tipo de Membro', 'Quantidade', 'Percentual', 'Nomes'];
-                    field = 'Membro';
-                    break;
-            }
-            
-            headers.forEach(header => {
-                const th = document.createElement('th');
-                th.textContent = header;
-                relatorioHeader.appendChild(th);
-            });
-
-            const reportData = calculatePercentage(membros, field);
-
-            for (const [key, value] of Object.entries(reportData)) {
-                const nomes = membros.filter(m => (m[field] || 'Não informado') === key).map(m => m.Nm_Membro).join(", ");
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${key}</td>
-                    <td>${value.count}</td>
-                    <td>${value.percentage}%</td>
-                    <td>${nomes}</td>
-                `;
-                relatorioBody.appendChild(row);
-            }
-        }
-
-        function calculatePercentage(data, field) {
-            const counts = {};
-            
-            // Contar ocorrências
-            data.forEach(item => {
-                const value = item[field] || 'Não informado';
-                counts[value] = (counts[value] || 0) + 1;
-            });
-            
-            // Calcular percentuais
-            const result = {};
-            const total = data.length;
-            
-            for (const [key, count] of Object.entries(counts)) {
-                result[key] = {
-                    count: count,
-                    percentage: ((count / total) * 100).toFixed(2)
-                };
-            }
-            
-            return result;
-        }
-
-        function exportReport() {
-            const reportType = document.getElementById('relatorioTipo').value;
-
-            if (reportType === 'aniversariantes') {
-                const mes = prompt("Digite o número do mês (1-12):");
-                if (!mes || isNaN(mes) || mes < 1 || mes > 12) {
-                    alert("Mês inválido.");
-                    return;
-                }
-
-                // Ordenar por dia do mês antes de exportar
-                const aniversariantes = membros.filter(m => {
-                    if (!m.Data_Nasc) return false;
-                    const data = new Date(m.Data_Nasc);
-                    return (data.getMonth() + 1) == mes;
-                }).sort((a,b) => {
-                    const da = new Date(a.Data_Nasc).getDate();
-                    const db = new Date(b.Data_Nasc).getDate();
-                    return da - db;
-                });
-
-                let csv = 'Nome do Membro,Data de Nascimento\n';
-                aniversariantes.forEach(m => {
-                    csv += `"${m.Nm_Membro}","${m.Data_Nasc}"\n`;
-                });
-
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', `relatorio_aniversariantes_mes_${mes}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                return;
-            }
-
-            let field;
-            let headerField = '';
-            switch (reportType) {
-                case 'status':
-                    field = 'Status';
-                    headerField = 'Status';
-                    break;
-                case 'sexo':
-                    field = 'Sexo';
-                    headerField = 'Sexo';
-                    break;
-                case 'batismo':
-                    field = 'Batizado';
-                    headerField = 'Batizado';
-                    break;
-                case 'estadoCivil':
-                    field = 'Estado_Civil';
-                    headerField = 'Estado Civil';
-                    break;
-                case 'membro':
-                    field = 'Membro';
-                    headerField = 'Tipo de Membro';
-                    break;
-            }
-
-            const reportData = calculatePercentage(membros, field);
-            let csv = `${headerField},Quantidade,Percentual,Nomes\n`;
-
-            for (const [key, value] of Object.entries(reportData)) {
-                const nomes = membros.filter(m => (m[field] || 'Não informado') === key)
-                                     .map(m => m.Nm_Membro).join("; ");
-                // escapar possíveis aspas no campo nomes
-                const nomesEscapados = nomes.replace(/"/g, '""');
-                csv += `"${key}",${value.count},${value.percentage}%,"${nomesEscapados}"\n`;
-            }
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `relatorio_${reportType}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function backupData() {
-            // Mapeia os campos para a ordem desejada no CSV
-            const headers = [
-                'casdastro', 'Nm_Membro', 'Status', 'Tem_Filhos', 'Sexo', 'Membro', 'Batizado', 'Celular', 'Data_Nasc', 'CPF',
-                'Naturalidade', 'Estado_Civil', 'Escolaridade', 'Profissao', 'Nm_Conjuge', 'Endereco', 'Comp_Endereco',
-                'Bairro', 'Cidade', 'CEP', 'Nm_Mae', 'Nm_Pai'
-            ];
-
-            let csv = headers.join(';') + '\n';
-
-            membros.forEach(membro => {
-                const row = headers.map(header => {
-                    const value = membro[header] || '';
-                    return `"${value}"`;
-                }).join(';');
-                csv += row + '\n';
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const linkElement = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            linkElement.setAttribute('href', url);
-            linkElement.setAttribute('download', `backup_membros_${new Date().toISOString().slice(0,10)}.csv`);
-            linkElement.style.visibility = 'hidden';
-            document.body.appendChild(linkElement);
-            linkElement.click();
-            document.body.removeChild(linkElement);
-        }
-
-        function triggerRestore() {
-            document.getElementById('restoreFile').click();
-        }
-
-        function restoreData(evt) {
-            const file = evt.target.files[0];
-            
-            if (!file) {
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const contents = e.target.result;
-                    const restoredData = JSON.parse(contents);
-                    
-                    if (Array.isArray(restoredData)) {
-                        membros = restoredData;
-                        localStorage.setItem('membrosData', JSON.stringify(membros));
-                        
-                        updateDashboard();
-                        renderMembrosTable();
-                        
-                        showSuccessModal('Dados restaurados com sucesso!');
-                    } else {
-                        alert('O arquivo não contém dados válidos.');
-                    }
-                } catch (error) {
-                    console.error('Erro ao restaurar dados:', error);
-                    alert('Erro ao restaurar dados. Verifique se o arquivo é válido.');
-                }
-            };
-            reader.readAsText(file);
-            
-            // Limpar o input para permitir selecionar o mesmo arquivo novamente
-            evt.target.value = '';
-        }
-    </script>
-</body>
-<footer>
-    Gerenciamento de membros por Jaime J Mata Jr
-</footer>
-</html>
+From: <Saved by Blink>
+Snapshot-Content-Location: data:text/html, <html contenteditable>
+Subject: 
+Date: Mon, 8 Sep 2025 08:57:17 -0300
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="text/html";
+	boundary="----MultipartBoundary--0ie8cQNr26LUtGCFWGDD6hycqkHNdakGkDemUUlVWZ----"
+
+
+------MultipartBoundary--0ie8cQNr26LUtGCFWGDD6hycqkHNdakGkDemUUlVWZ----
+Content-Type: text/html
+Content-ID: <frame-0825C54BB7E6AC259127D0FEADC46A2A@mhtml.blink>
+Content-Transfer-Encoding: quoted-printable
+Content-Location: data:text/html, <html contenteditable>
+
+<html contenteditable=3D""><head><meta http-equiv=3D"Content-Type" content=
+=3D"text/html; charset=3Dwindows-1252"></head><body><div>&lt;!DOCTYPE html&=
+gt;</div><div>&lt;html lang=3D"pt-BR"&gt;</div><div>&lt;head&gt;</div><div>=
+&nbsp; &nbsp; &lt;meta charset=3D"UTF-8"&gt;</div><div>&nbsp; &nbsp; &lt;me=
+ta name=3D"viewport" content=3D"width=3Ddevice-width, initial-scale=3D1.0"&=
+gt;</div><div>&nbsp; &nbsp; &lt;title&gt;Igreja Batista Parque Santa Cruz&l=
+t;/title&gt;</div><div>&nbsp; &nbsp; &lt;link href=3D"https://cdn.jsdelivr.=
+net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel=3D"styleshee=
+t"&gt;</div><div>&nbsp; &nbsp; &lt;link rel=3D"stylesheet" href=3D"https://=
+cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css"&gt;</=
+div><div>&nbsp; &nbsp; &lt;link rel=3D"stylesheet" href=3D"style.css"&gt;</=
+div><div>&nbsp; &nbsp; &lt;script src=3D"https://cdn.jsdelivr.net/npm/papap=
+arse@5.3.0/papaparse.min.js"&gt;&lt;/script&gt;</div><div>&nbsp; &nbsp; &lt=
+;script src=3D"https://cdn.jsdelivr.net/npm/chart.js"&gt;&lt;/script&gt;</d=
+iv><div>&lt;/head&gt;</div><div>&lt;body&gt;</div><div>&nbsp; &nbsp; &lt;di=
+v class=3D"container-fluid"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &lt;d=
+iv class=3D"row"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &l=
+t;div class=3D"col-md-3 col-lg-2 sidebar px-0"&gt;</div><div>&nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"sidebar-heading"=
+&gt;Igreja Batista Parque Santa Cruz&lt;/div&gt;</div><div>&nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;ul class=3D"nav flex-column"&gt=
+;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &lt;li class=3D"nav-item"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;a class=3D"nav-=
+link active" href=3D"#" data-bs-target=3D"dashboard"&gt;</div><div>&nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &lt;i class=3D"bi bi-speedometer2"&gt;&lt;/i&gt; Dashboard</=
+div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &lt;/a&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/li&gt;</div><div>&nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;li class=3D"nav-item=
+"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &lt;a class=3D"nav-link" href=3D"#" data-bs-target=
+=3D"membros"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;i class=3D"bi bi-peop=
+le-fill"&gt;&lt;/i&gt; Gerenciar Membros</div><div>&nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/a&gt;</div=
+><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &lt;/li&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &lt;li class=3D"nav-item"&gt;</div><div>&nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;a cl=
+ass=3D"nav-link" href=3D"#" data-bs-target=3D"relatorios"&gt;</div><div>&nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &lt;i class=3D"bi bi-bar-chart-fill"&gt;&lt;/i&gt; Rela=
+t=F3rios</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;/a&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/li&gt;</div><div>&nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;li class=
+=3D"nav-item"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;a class=3D"nav-link" href=3D"#" da=
+ta-bs-target=3D"importar"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;i class=
+=3D"bi bi-upload"&gt;&lt;/i&gt; Importar CSV</div><div>&nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/a&gt;<=
+/div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &lt;/li&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &lt;li class=3D"nav-item mt-4"&gt;</div><div>&nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &lt;a class=3D"nav-link" href=3D"#" id=3D"backupBtn"&gt;</div><div>&nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &lt;i class=3D"bi bi-cloud-arrow-down"&gt;&lt;/i&gt; Backup=
+</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &lt;/a&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/li&gt;</div><div>&nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;li class=3D"nav-it=
+em"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &lt;a class=3D"nav-link" href=3D"#" id=3D"restor=
+eBtn"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;i class=3D"bi bi-cloud-arrow=
+-up"&gt;&lt;/i&gt; Restaurar</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/a&gt;</div><div>&nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/li&gt;=
+</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/ul&=
+gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><=
+div><br></div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=
+=3D"col-md-9 col-lg-10 main-content"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"content-section" id=3D"das=
+hboard-section"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &lt;h2 class=3D"mb-4"&gt;Dashboard&lt;/h2&gt;</div=
+><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &lt;div class=3D"row mb-4"&gt;</div><div>&nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=
+=3D"col-xl-3 col-md-6 mb-4"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div cl=
+ass=3D"card card-dashboard border-left-primary h-100 py-2"&gt;</div><div>&n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"card-body"&gt;</div><di=
+v>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"row n=
+o-gutters align-items-center"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col mr-2"&gt;</div><div>=
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &lt;div class=3D"text-xs font-weight-bold text-primary text-uppercase m=
+b-1"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Total de Membros&lt;/div&gt;</div><div=
+>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &lt;div class=3D"h5 mb-0 font-weight-bold text-gray-800" id=3D"total-m=
+embros"&gt;0&lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-auto"&gt;</div><=
+div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &lt;i class=3D"bi bi-people-fill fa-2x text-gray-300"&gt;&lt;/i&gt;=
+</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</d=
+iv><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;=
+</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-xl-3 col-=
+md-6 mb-4"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"card card-=
+dashboard border-left-success h-100 py-2"&gt;</div><div>&nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &lt;div class=3D"card-body"&gt;</div><div>&nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"row no-gutters align-i=
+tems-center"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &lt;div class=3D"col mr-2"&gt;</div><div>&nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=
+=3D"text-xs font-weight-bold text-success text-uppercase mb-1"&gt;</div><di=
+v>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; Membros Ativos&lt;/div&gt;</div><div>&nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=
+=3D"h5 mb-0 font-weight-bold text-gray-800" id=3D"ativos"&gt;0&lt;/div&gt;<=
+/div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &lt;div class=3D"col-auto"&gt;</div><div>&nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;i class=3D"bi=
+ bi-check-circle fa-2x text-gray-300"&gt;&lt;/i&gt;</div><div>&nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>=
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp=
+;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &lt;div class=3D"col-xl-3 col-md-6 mb-4"&gt;</div><div=
+>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &lt;div class=3D"card card-dashboard border-left-in=
+fo h-100 py-2"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div c=
+lass=3D"card-body"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &lt;div class=3D"row no-gutters align-items-center"&gt;</div><div>=
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div cl=
+ass=3D"col mr-2"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"text-xs font-weight-bol=
+d text-info text-uppercase mb-1"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Membros Ba=
+tizados&lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"h5 mb-0 font-weight-bold=
+ text-gray-800" id=3D"batizados"&gt;0&lt;/div&gt;</div><div>&nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div clas=
+s=3D"col-auto"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;i class=3D"bi bi-droplet fa-2x text-gr=
+ay-300"&gt;&lt;/i&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>=
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div c=
+lass=3D"col-xl-3 col-md-6 mb-4"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;di=
+v class=3D"card card-dashboard border-left-warning h-100 py-2"&gt;</div><di=
+v>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"card-body"&gt;</div=
+><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"r=
+ow no-gutters align-items-center"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col mr-2"&gt;</div><=
+div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &lt;div class=3D"text-xs font-weight-bold text-warning text-upperca=
+se mb-1"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Aniversariantes&lt;/div&gt;</div><=
+div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &lt;div class=3D"h5 mb-0 font-weight-bold text-gray-800" id=3D"aniv=
+ersariantes"&gt;0&lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-auto"&gt;</=
+div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &lt;i class=3D"bi bi-gift fa-2x text-gray-300"&gt;&lt;/i&gt;</=
+div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &l=
+t;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div=
+><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</=
+div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"row"&gt;</div><div>&nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &lt;div class=3D"col-lg-6 mb-4"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt=
+;div class=3D"card card-dashboard"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &lt;div class=3D"card-header py-3"&gt;</div><div>&nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;h6 class=3D"m-0 font-weight-bold te=
+xt-primary"&gt;Status dos Membros&lt;/h6&gt;</div><div>&nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &lt;div class=3D"card-body"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &lt;div id=3D"chart-container"&gt;</div><div>&nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;canvas id=3D"sta=
+tusChart"&gt;&lt;/canvas&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=
+=3D"col-lg-6 mb-4"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"ca=
+rd card-dashboard"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;d=
+iv class=3D"card-header py-3"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &lt;h6 class=3D"m-0 font-weight-bold text-primary"&gt;D=
+istribui=E7=E3o por Sexo&lt;/h6&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div=
+ class=3D"card-body"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &lt;div id=3D"chart-container"&gt;</div><div>&nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;canvas id=3D"sexoChart"&g=
+t;&lt;/canvas&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt=
+;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div=
+&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &lt;/div&gt;</div><div><br></div><div>&nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"content-section d-none" i=
+d=3D"membros-section"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"d-flex justify-content-betw=
+een align-items-center mb-4"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;h2&gt;Gerenciar Mem=
+bros&lt;/h2&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div&gt;</div><div>&nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &lt;button class=3D"btn btn-primary me-2" data-bs-toggle=3D"modal" dat=
+a-bs-target=3D"#adicionarMembroModal"&gt;</div><div>&nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &lt;i class=3D"bi bi-plus-circle me-1"&gt;&lt;/i&gt; Adiciona=
+r Membro</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/button&gt;</div><div>&nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"card card=
+-dashboard mb-4"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"card-body"&gt;</di=
+v><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"row"&gt;</div><div>&nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-6 mb-2"&gt;</div><div>&=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;input type=3D"text" c=
+lass=3D"form-control" id=3D"searchInput" placeholder=3D"Buscar membro..."&g=
+t;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-3 mb-2"&gt;</div=
+><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;select class=
+=3D"form-select" id=3D"statusFilter"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=3D""&gt;Todos os =
+status&lt;/option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &lt;option value=3D"Ativo"&gt;Ativo&lt;/option&gt;</d=
+iv><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &l=
+t;option value=3D"Inativo"&gt;Inativo&lt;/option&gt;</div><div>&nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=3D"Fa=
+lecido"&gt;Falecido&lt;/option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &lt;/select&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;di=
+v class=3D"col-md-3 mb-2"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &lt;select class=3D"form-select" id=3D"membroFilter"&gt;</d=
+iv><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &l=
+t;option value=3D""&gt;Todos os tipos&lt;/option&gt;</div><div>&nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=3D"Si=
+m"&gt;Membro&lt;/option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=3D"N=E3o"&gt;N=E3o membro&lt;/=
+option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt=
+;/select&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</d=
+iv><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;=
+</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"card card-dashboard"&gt=
+;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &lt;div class=3D"card-body"&gt;</div><div>&nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &lt;div class=3D"table-responsive"&gt;</div><div>&nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &lt;table class=3D"table table-striped table-hover"&g=
+t;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;thead c=
+lass=3D"table-dark"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &lt;tr&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;th&gt;Nome do Membro&l=
+t;/th&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &lt;th&gt;Status&lt;/th&gt;</div><div>&nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;th&gt=
+;Sexo&lt;/th&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &lt;th&gt;Membro&lt;/th&gt;</div><div>&nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &l=
+t;th&gt;Batizado&lt;/th&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;th&gt;Celular&lt;/th&gt;</div=
+><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &lt;th&gt;A=E7=F5es&lt;/th&gt;</div><div>&nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/tr&gt;</div><div>&nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/thead&gt;</div><div>&nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;tbody id=3D"membrosTableBody"&g=
+t;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &lt;/tbody&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/table=
+&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;nav aria-label=3D"Page =
+navigation" class=3D"mt-3"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &lt;ul class=3D"pagination justify-content-center" id=3D"pagination"&gt;=
+</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/ul&gt;</=
+div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/nav&gt;</div><div>&nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt=
+;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &lt;/div&gt;</div><div><br></div><div>&nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"content-section d-none" id=
+=3D"relatorios-section"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;h2 class=3D"mb-4"&gt;Relat=F3rios&lt;/=
+h2&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &lt;div class=3D"card card-dashboard mb-4"&gt;</div>=
+<div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &lt;div class=3D"card-header py-3"&gt;</div><div>&nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &lt;h5 class=3D"m-0 font-weight-bold text-primary"&gt;Gerar Rela=
+t=F3rio&lt;/h5&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;d=
+iv class=3D"card-body"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=
+=3D"row"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=
+=3D"col-md-4 mb-2"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &lt;select class=3D"form-select" id=3D"relatorioTipo"&gt;</div><di=
+v>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;opti=
+on value=3D"status"&gt;Por Status&lt;/option&gt;</div><div>&nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=3D"sexo"&=
+gt;Por Sexo&lt;/option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=3D"batismo"&gt;Por Batismo&lt;/=
+option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &lt;option value=3D"estadoCivil"&gt;Por Estado Civil&lt;/option&=
+gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &lt;option value=3D"membro"&gt;Por Tipo de Membro&lt;/option&gt;</div><=
+div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;op=
+tion value=3D"aniversariantes"&gt;Aniversariantes&lt;/option&gt;</div><div>=
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/select&gt;</div><di=
+v>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-4 mb-2"&gt;</div><div>&nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button class=3D"btn btn-p=
+rimary w-100" id=3D"gerarRelatorioBtn"&gt;Gerar Relat=F3rio&lt;/button&gt;<=
+/div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-4 mb-2"&gt;</div><d=
+iv>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button class=3D"b=
+tn btn-success w-100" id=3D"exportarRelatorioBtn"&gt;Exportar para CSV&lt;/=
+button&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div=
+><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</=
+div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"card card-dashboard"&gt;<=
+/div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &lt;div class=3D"card-header py-3"&gt;</div><div>&nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &lt;h5 class=3D"m-0 font-weight-bold text-primary"&gt;Resul=
+tado do Relat=F3rio&lt;/h5&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &lt;div class=3D"card-body"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt=
+;div class=3D"table-responsive"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &lt;table class=3D"table table-striped"&gt;</div><div>&nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;thead class=3D"table-dark"&gt;</d=
+iv><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &l=
+t;tr id=3D"relatorioHeader"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/tr&gt;</div><div>&nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/thead&gt;</div><div>&nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;tbody id=3D"relatorioBody"=
+&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &lt;/tbody&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/tab=
+le&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt=
+;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &lt;/div&gt;</div><div><br></div><div>&nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"content-section d-no=
+ne" id=3D"importar-section"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;h2 class=3D"mb-4"&gt;Importar Dado=
+s de CSV&lt;/h2&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"card card-dashboard mb=
+-4"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"card-body"&gt;</div><div>&nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &lt;div class=3D"mb-3"&gt;</div><div>&nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &lt;label for=3D"csvFile" class=3D"form-label"&gt;Selecione=
+ o arquivo CSV&lt;/label&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &lt;input class=3D"form-control" type=3D"file" id=3D"csvFile" accept=3D".c=
+sv"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &lt;button class=3D"btn btn-primary" id=3D"importCsvBtn"&gt;Imp=
+ortar CSV&lt;/button&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button class=
+=3D"btn btn-secondary ms-2" id=3D"clearCsvBtn"&gt;Limpar&lt;/button&gt;</di=
+v><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div clas=
+s=3D"card card-dashboard mb-4 d-none" id=3D"importStatusCard"&gt;</div><div=
+>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &lt;div class=3D"card-header py-3"&gt;</div><div>&nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &lt;h5 class=3D"m-0 font-weight-bold text-primary"&gt;Status da Impo=
+rta=E7=E3o&lt;/h5&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &l=
+t;div class=3D"card-body"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div clas=
+s=3D"progress mb-3" style=3D"height: 20px;"&gt;</div><div>&nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &lt;div class=3D"progress-bar progress-bar-striped prog=
+ress-bar-animated"&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp;role=3D"progressbar" style=3D"width: 0%"&nbsp;</div><div>&=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;aria-valuenow=3D"0"=
+ aria-valuemin=3D"0" aria-valuemax=3D"100" id=3D"importProgress"&gt;</div><=
+div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 0%</div><div>&nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div id=3D"importStatusTe=
+xt"&gt;Preparando importa=E7=E3o...&lt;/div&gt;</div><div>&nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div=
+&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"debug-info" id=3D"d=
+ebugInfo"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;h6&gt;Informa=E7=F5es de Debug:&lt;/h6=
+&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &lt;div id=3D"debugContent"&gt;&lt;/div&gt;</div><d=
+iv>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &l=
+t;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"card card-dashboard"&gt;</div><=
+div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &lt;div class=3D"card-header py-3"&gt;</div><div>&nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &lt;h5 class=3D"m-0 font-weight-bold text-primary"&gt;Visualiza=
+=E7=E3o Pr=E9via dos Dados&lt;/h5&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div>=
+<div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &lt;div class=3D"card-body"&gt;</div><div>&nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &lt;div class=3D"table-responsive"&gt;</div><div>&nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &lt;table class=3D"table table-striped"&gt;</div><div>&nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;thead class=3D"table-dark"=
+&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &lt;tr&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &lt;th&gt;Nm_Membro&lt;/th&gt;</div><div>&nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&lt;th&gt;Status&lt;/th&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;th&gt;Sexo&lt;/th&gt;</div><d=
+iv>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &lt;th&gt;Membro&lt;/th&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;th&gt;Batizado&lt;/th&=
+gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &lt;th&gt;Celular&lt;/th&gt;</div><div>&nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;th&gt;A=E7=
+=F5es&lt;/th&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &lt;/tr&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &lt;/thead&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &lt;tbody id=3D"previewTableBody"&gt;</div><div>&nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/tbody&gt;</div><=
+div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/table&gt;</div><div>&nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt=
+;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/di=
+v&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div=
+><div>&nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &lt;=
+/div&gt;</div><div><br></div><div>&nbsp; &nbsp; &lt;div class=3D"modal fade=
+" id=3D"adicionarMembroModal" tabindex=3D"-1" aria-hidden=3D"true"&gt;</div=
+><div>&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"modal-dialog modal-lg"&g=
+t;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"mod=
+al-content"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &lt;div class=3D"modal-header"&gt;</div><div>&nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;h5 class=3D"modal-title"=
+ id=3D"modalTitle"&gt;Adicionar Novo Membro&lt;/h5&gt;</div><div>&nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button type=
+=3D"button" class=3D"btn-close" data-bs-dismiss=3D"modal" aria-label=3D"Clo=
+se"&gt;&lt;/button&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &lt;div class=3D"modal-body"&gt;</div><div>&nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;form id=3D"memb=
+roForm" class=3D"needs-validation" novalidate&gt;</div><div>&nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;in=
+put type=3D"hidden" id=3D"membroId"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D=
+"row"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-6 mb-3"&=
+gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=3D"casdast=
+ro" class=3D"form-label required"&gt;Cadastro&lt;/label&gt;</div><div>&nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;input type=3D"text" class=3D"form-contr=
+ol" id=3D"casdastro" required&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &lt;div class=3D"invalid-feedback"&gt;Por favor, informe o n=FAmero d=
+e cadastro.&lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div>=
+<div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-6 mb-3"&gt;</div><div>&=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=3D"Nm_Membro" class=3D"fo=
+rm-label required"&gt;Nome do Membro&lt;/label&gt;</div><div>&nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &lt;input type=3D"text" class=3D"form-control" id=3D=
+"Nm_Membro" required&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt=
+;div class=3D"invalid-feedback"&gt;Por favor, informe o nome.&lt;/div&gt;</=
+div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt=
+;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"row"&gt;</di=
+v><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-6 mb-3"&gt;</div><div=
+>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=3D"Status" class=3D"for=
+m-label required"&gt;Status&lt;/label&gt;</div><div>&nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &lt;select class=3D"form-select" id=3D"Status" required&gt;</=
+div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option valu=
+e=3D""&gt;Selecione...&lt;/option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &lt;option value=3D"Ativo"&gt;Ativo&lt;/option&gt;<=
+/div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option val=
+ue=3D"Inativo"&gt;Inativo&lt;/option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=3D"Falecido"&gt;Falecido&lt;/op=
+tion&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/select&gt;</di=
+v><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"invalid-feedba=
+ck"&gt;Por favor, selecione o status.&lt;/div&gt;</div><div>&nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-=
+md-6 mb-3"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=
+=3D"Sexo" class=3D"form-label required"&gt;Sexo&lt;/label&gt;</div><div>&nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;select class=3D"form-select" id=3D"Se=
+xo" required&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &lt;option value=3D""&gt;Selecione...&lt;/option&gt;</div><div>&nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=3D"Masculino"&gt=
+;Masculino&lt;/option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &lt;option value=3D"Feminino"&gt;Feminino&lt;/option&gt;</div><=
+div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/select&gt;</div><div>&nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"invalid-feedback"&gt;Por favo=
+r, selecione o sexo.&lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&=
+gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &lt;div class=3D"row"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div cla=
+ss=3D"col-md-6 mb-3"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt=
+;label for=3D"Membro" class=3D"form-label required"&gt;Membro&lt;/label&gt;=
+</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;select class=3D"form-se=
+lect" id=3D"Membro" required&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &lt;option value=3D""&gt;Selecione...&lt;/option&gt;</di=
+v><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=
+=3D"Sim"&gt;Sim&lt;/option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &lt;option value=3D"N=E3o"&gt;N=E3o&lt;/option&gt;</div><d=
+iv>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/select&gt;</div><div>&nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"invalid-feedback"&gt;Por favor=
+, selecione se =E9 membro.&lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt=
+;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-6 mb-3"&=
+gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=3D"Batizad=
+o" class=3D"form-label required"&gt;Batizado&lt;/label&gt;</div><div>&nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &lt;select class=3D"form-select" id=3D"Batiz=
+ado" required&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &lt;option value=3D""&gt;Selecione...&lt;/option&gt;</div><div>&nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=3D"Sim"&gt;Sim&=
+lt;/option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &lt;option value=3D"N=E3o"&gt;N=E3o&lt;/option&gt;</div><div>&nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &lt;/select&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &lt;div class=3D"invalid-feedback"&gt;Por favor, selecione se =
+=E9 batizado.&lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</di=
+v><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &l=
+t;div class=3D"row"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"c=
+ol-md-6 mb-3"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label =
+for=3D"Celular" class=3D"form-label"&gt;Celular&lt;/label&gt;</div><div>&nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;input type=3D"text" class=3D"form-con=
+trol" id=3D"Celular" placeholder=3D"(11) 99999-9999"&gt;</div><div>&nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=
+=3D"col-md-6 mb-3"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;l=
+abel for=3D"Data_Nasc" class=3D"form-label"&gt;Data de Nascimento&lt;/label=
+&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;input type=3D"date"=
+ class=3D"form-control" id=3D"Data_Nasc"&gt;</div><div>&nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</d=
+iv><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &lt;div class=3D"row"&gt;</div><div>&nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &lt;div class=3D"col-md-6 mb-3"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &lt;label for=3D"CPF" class=3D"form-label"&gt;CPF&lt;/label&gt;</d=
+iv><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;input type=3D"text" class=
+=3D"form-control" id=3D"CPF" placeholder=3D"000.000.000-00"&gt;</div><div>&=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div=
+ class=3D"col-md-6 mb-3"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &lt;label for=3D"Naturalidade" class=3D"form-label"&gt;Naturalidade&lt;/la=
+bel&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;input type=3D"te=
+xt" class=3D"form-control" id=3D"Naturalidade"&gt;</div><div>&nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nb=
+sp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &lt;div class=3D"row"&gt;</div><div>&nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &lt;div class=3D"col-md-6 mb-3"&gt;</div><div>&nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &lt;label for=3D"Estado_Civil" class=3D"form-label"&gt;Estad=
+o Civil&lt;/label&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;se=
+lect class=3D"form-select" id=3D"Estado_Civil"&gt;</div><div>&nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=3D""&gt;Selecione...&=
+lt;/option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &lt;option value=3D"Solteiro"&gt;Solteiro(a)&lt;/option&gt;</div><div>&nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=3D"Casado"&=
+gt;Casado(a)&lt;/option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &lt;option value=3D"Divorciado"&gt;Divorciado(a)&lt;/option&g=
+t;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option =
+value=3D"Vi=FAvo"&gt;Vi=FAvo(a)&lt;/option&gt;</div><div>&nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &lt;/select&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/di=
+v&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-6 mb-3"&gt;<=
+/div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=3D"Escolaridad=
+e" class=3D"form-label"&gt;Escolaridade&lt;/label&gt;</div><div>&nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &lt;input type=3D"text" class=3D"form-control" id=
+=3D"Escolaridade"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><d=
+iv>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &lt;/div&gt;</div><div><br></div><div>&nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D=
+"row"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-6 mb-3"&=
+gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=3D"Profiss=
+ao" class=3D"form-label"&gt;Profiss=E3o&lt;/label&gt;</div><div>&nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &lt;input type=3D"text" class=3D"form-control" id=
+=3D"Profissao"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>=
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-6 mb-3"&gt;</div><div>&nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=3D"Nm_Conjuge" class=3D"form-l=
+abel"&gt;Nome do C=F4njuge&lt;/label&gt;</div><div>&nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &lt;input type=3D"text" class=3D"form-control" id=3D"Nm_Conjug=
+e"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt=
+;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"mb-3=
+"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=3D"Endereco" class=3D"=
+form-label"&gt;Endere=E7o&lt;/label&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &l=
+t;input type=3D"text" class=3D"form-control" id=3D"Endereco" placeholder=3D=
+"Rua, n=FAmero"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div><br></div><di=
+v>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &lt;div class=3D"mb-3"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;=
+label for=3D"Comp_Endereco" class=3D"form-label"&gt;Complemento&lt;/label&g=
+t;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;input type=3D"text" class=3D"form-c=
+ontrol" id=3D"Comp_Endereco" placeholder=3D"Apto, Bloco, Casa"&gt;</div><di=
+v>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div=
+ class=3D"row"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md=
+-6 mb-3"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=
+=3D"Bairro" class=3D"form-label"&gt;Bairro&lt;/label&gt;</div><div>&nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &lt;input type=3D"text" class=3D"form-control"=
+ id=3D"Bairro"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>=
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-6 mb-3"&gt;</div><div>&nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=3D"Cidade" class=3D"form-label=
+"&gt;Cidade&lt;/label&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &l=
+t;input type=3D"text" class=3D"form-control" id=3D"Cidade"&gt;</div><div>&n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div=
+><br></div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"row"&gt;</div><div>&nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &lt;div class=3D"col-md-6 mb-3"&gt;</div><div>&nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &lt;label for=3D"CEP" class=3D"form-label"&gt;CEP&lt;/labe=
+l&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;input type=3D"text=
+" class=3D"form-control" id=3D"CEP"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &l=
+t;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-6 mb-3"=
+&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=3D"Nm_Mae=
+" class=3D"form-label"&gt;Nome da M=E3e&lt;/label&gt;</div><div>&nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &lt;input type=3D"text" class=3D"form-control" id=
+=3D"Nm_Mae"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &lt;/div&gt;</div><div><br></div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"mb-3"=
+&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=3D"Nm_Pai" class=3D"for=
+m-label"&gt;Nome do Pai&lt;/label&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;=
+input type=3D"text" class=3D"form-control" id=3D"Nm_Pai"&gt;</div><div>&nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &lt;/div&gt;</div><div><br></div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"row"&g=
+t;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"col-md-6 mb-3"&gt;</di=
+v><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;label for=3D"Tem_Filhos" cl=
+ass=3D"form-label required"&gt;Tem Filhos&lt;/label&gt;</div><div>&nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;select class=3D"form-select" id=3D"Tem_Filh=
+os" required&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
+p; &lt;option value=3D""&gt;Selecione...&lt;/option&gt;</div><div>&nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value=3D"Sim"&gt;Sim&l=
+t;/option&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&lt;option value=3D"N=E3o"&gt;N=E3o&lt;/option&gt;</div><div>&nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &lt;/select&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &lt;div class=3D"invalid-feedback"&gt;Por favor, selecione se te=
+m filhos.&lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><d=
+iv>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &lt;/div&gt;</div><div><br></div><div>&nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/form&gt;</div><div>&nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"moda=
+l-footer"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &lt;button type=3D"button" class=3D"btn btn-secondary" d=
+ata-bs-dismiss=3D"modal"&gt;Cancelar&lt;/button&gt;</div><div>&nbsp; &nbsp;=
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button type=3D=
+"button" class=3D"btn btn-primary" id=3D"saveMembroBtn"&gt;Salvar&lt;/butto=
+n&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt=
+;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;<=
+/div><div>&nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; =
+&lt;/div&gt;</div><div><br></div><div>&nbsp; &nbsp; &lt;div class=3D"modal =
+fade" id=3D"confirmDeleteModal" tabindex=3D"-1" aria-hidden=3D"true"&gt;</d=
+iv><div>&nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"modal-dialog"&gt;</div=
+><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"modal-cont=
+ent"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&lt;div class=3D"modal-header"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;h5 class=3D"modal-title"&gt;Con=
+firmar Exclus=E3o&lt;/h5&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button type=3D"button" class=3D"btn-c=
+lose" data-bs-dismiss=3D"modal" aria-label=3D"Close"&gt;&lt;/button&gt;</di=
+v><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;=
+</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div =
+class=3D"modal-body"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &lt;p&gt;Tem certeza que deseja excluir este =
+membro?&lt;/p&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &lt;div class=3D"modal-footer"&gt;</div><div>&nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button type=3D"but=
+ton" class=3D"btn btn-secondary" data-bs-dismiss=3D"modal"&gt;Cancelar&lt;/=
+button&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &lt;button type=3D"button" class=3D"btn btn-danger" id=3D"c=
+onfirmDeleteBtn"&gt;Excluir&lt;/button&gt;</div><div>&nbsp; &nbsp; &nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; =
+&lt;/div&gt;</div><div>&nbsp; &nbsp; &lt;/div&gt;</div><div><br></div><div>=
+&nbsp; &nbsp; &lt;div class=3D"modal fade" id=3D"successModal" tabindex=3D"=
+-1" aria-hidden=3D"true"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &lt;div =
+class=3D"modal-dialog"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &lt;div class=3D"modal-content"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"modal-header bg-success tex=
+t-white"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &lt;h5 class=3D"modal-title"&gt;Sucesso&lt;/h5&gt;</div><=
+div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
+lt;button type=3D"button" class=3D"btn-close" data-bs-dismiss=3D"modal" ari=
+a-label=3D"Close"&gt;&lt;/button&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"modal-body"&gt;</div><div>=
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;p=
+ id=3D"successMessage"&gt;Opera=E7=E3o realizada com sucesso!&lt;/p&gt;</di=
+v><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;=
+</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div =
+class=3D"modal-footer"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button type=3D"button" class=3D"btn btn=
+-success" data-bs-dismiss=3D"modal"&gt;OK&lt;/button&gt;</div><div>&nbsp; &=
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; =
+&nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &lt;/div&gt;</div><div>&=
+nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &lt;div class=3D"modal fade" id=
+=3D"errorModal" tabindex=3D"-1" aria-hidden=3D"true"&gt;</div><div>&nbsp; &=
+nbsp; &nbsp; &nbsp; &lt;div class=3D"modal-dialog"&gt;</div><div>&nbsp; &nb=
+sp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"modal-content"&gt;</div><d=
+iv>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D=
+"modal-header bg-danger text-white"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;h5 class=3D"modal-title"&g=
+t;Erro&lt;/h5&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &lt;button type=3D"button" class=3D"btn-close" data-=
+bs-dismiss=3D"modal" aria-label=3D"Close"&gt;&lt;/button&gt;</div><div>&nbs=
+p; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>=
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class=3D"mo=
+dal-body"&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
+bsp; &nbsp; &nbsp; &lt;p id=3D"errorMessage"&gt;Ocorreu um erro na opera=E7=
+=E3o.&lt;/p&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb=
+sp; &nbsp; &lt;div class=3D"modal-footer"&gt;</div><div>&nbsp; &nbsp; &nbsp=
+; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button type=3D"butto=
+n" class=3D"btn btn-danger" data-bs-dismiss=3D"modal"&gt;OK&lt;/button&gt;<=
+/div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&=
+gt;</div><div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><=
+div>&nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt;</div><div>&nbsp; &nbsp; &lt;/d=
+iv&gt;</div><div><br></div><div><br></div><div>&nbsp; &nbsp; &lt;input type=
+=3D"file" id=3D"restoreFile" accept=3D".json" style=3D"display: none;"&gt;<=
+/div><div>&nbsp; &nbsp;&nbsp;</div><div>&nbsp; &nbsp; &lt;script src=3D"htt=
+ps://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.m=
+in.js"&gt;&lt;/script&gt;</div><div>&nbsp; &nbsp; &lt;script src=3D"script.=
+js"&gt;&lt;/script&gt;</div><div>&lt;/body&gt;</div><div>&lt;footer&gt;</di=
+v><div>&nbsp; &nbsp; Gerenciamento de membros por Jaime J Mata Jr</div><div=
+>&lt;/footer&gt;</div><div>&lt;/html&gt;</div></body></html>
+------MultipartBoundary--0ie8cQNr26LUtGCFWGDD6hycqkHNdakGkDemUUlVWZ------
