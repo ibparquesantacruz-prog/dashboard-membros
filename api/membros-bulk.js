@@ -5,63 +5,80 @@ export default async function handler(req, res) {
         res.setHeader('Allow', ['POST']);
         return res.status(405).end(`Method ${req.method} Not Allowed`);
     }
-
+    
     try {
         const membros = req.body;
-
         if (!Array.isArray(membros) || membros.length === 0) {
             return res.status(400).json({ error: 'Nenhum membro enviado para importação.' });
         }
         
-        // Função auxiliar para converter strings vazias em null
-        const sanitizeData = (data) => {
-            const sanitized = {};
-            for (const key in data) {
-                // Remove espaços em branco antes de verificar se é uma string vazia
-                const value = typeof data[key] === 'string' ? data[key].trim() : data[key];
-                sanitized[key] = value === '' ? null : value;
+        // Usando uma transação para garantir que todas as operações sejam bem-sucedidas ou nenhuma delas
+        const client = await sql.connect();
+
+        try {
+            await client.query('BEGIN');
+
+            for (const membro of membros) {
+                // Converte strings vazias em null para consistência no banco de dados
+                const sanitizedMembro = Object.fromEntries(
+                    Object.entries(membro).map(([key, value]) => [key, value === '' ? null : value])
+                );
+
+                const {
+                    casdastro, Nm_Membro, Status, Tem_Filhos, Sexo, Membro, Batizado, Celular, Data_Nasc, CPF,
+                    Naturalidade, Estado_Civil, Escolaridade, Profissao, Nm_Conjuge, Endereco, Comp_Endereco,
+                    Bairro, Cidade, CEP, Nm_Mae, Nm_Pai
+                } = sanitizedMembro;
+
+                await client.query(
+                    `
+                    INSERT INTO membros (
+                        casdastro, Nm_Membro, Status, Tem_Filhos, Sexo, Membro, Batizado, Celular, Data_Nasc, CPF,
+                        Naturalidade, Estado_Civil, Escolaridade, Profissao, Nm_Conjuge, Endereco, Comp_Endereco,
+                        Bairro, Cidade, CEP, Nm_Mae, Nm_Pai
+                    ) VALUES (
+                        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22
+                    )
+                    ON CONFLICT (casdastro) DO UPDATE SET
+                        Nm_Membro = EXCLUDED.Nm_Membro,
+                        Status = EXCLUDED.Status,
+                        Tem_Filhos = EXCLUDED.Tem_Filhos,
+                        Sexo = EXCLUDED.Sexo,
+                        Membro = EXCLUDED.Membro,
+                        Batizado = EXCLUDED.Batizado,
+                        Celular = EXCLUDED.Celular,
+                        Data_Nasc = EXCLUDED.Data_Nasc,
+                        CPF = EXCLUDED.CPF,
+                        Naturalidade = EXCLUDED.Naturalidade,
+                        Estado_Civil = EXCLUDED.Estado_Civil,
+                        Escolaridade = EXCLUDED.Escolaridade,
+                        Profissao = EXCLUDED.Profissao,
+                        Nm_Conjuge = EXCLUDED.Nm_Conjuge,
+                        Endereco = EXCLUDED.Endereco,
+                        Comp_Endereco = EXCLUDED.Comp_Endereco,
+                        Bairro = EXCLUDED.Bairro,
+                        Cidade = EXCLUDED.Cidade,
+                        CEP = EXCLUDED.CEP,
+                        Nm_Mae = EXCLUDED.Nm_Mae,
+                        Nm_Pai = EXCLUDED.Nm_Pai;
+                    `,
+                    [
+                        casdastro, Nm_Membro, Status, Tem_Filhos, Sexo, Membro, Batizado, Celular, Data_Nasc, CPF,
+                        Naturalidade, Estado_Civil, Escolaridade, Profissao, Nm_Conjuge, Endereco, Comp_Endereco,
+                        Bairro, Cidade, CEP, Nm_Mae, Nm_Pai
+                    ]
+                );
             }
-            return sanitized;
-        };
+            
+            await client.query('COMMIT');
+            client.release();
+            return res.status(200).json({ message: `${membros.length} registros importados com sucesso!` });
 
-        const sanitizedMembros = membros.map(membro => sanitizeData(membro));
-        
-        // Limpar todos os registros existentes antes de importar
-        await sql`TRUNCATE TABLE membros;`;
-
-        // Iterar sobre a lista de membros e inserir cada um
-        for (const membro of sanitizedMembros) {
-            await sql`
-                INSERT INTO membros (casdastro, Nm_Membro, Status, Tem_Filhos, Sexo, Membro, Batizado, Celular, Data_Nasc, CPF, Naturalidade, Estado_Civil, Escolaridade, Profissao, Nm_Conjuge, Endereco, Comp_Endereco, Bairro, Cidade, CEP, Nm_Mae, Nm_Pai)
-                VALUES (
-                    ${membro.casdastro},
-                    ${membro.Nm_Membro},
-                    ${membro.Status},
-                    ${membro.Tem_Filhos},
-                    ${membro.Sexo},
-                    ${membro.Membro},
-                    ${membro.Batizado},
-                    ${membro.Celular},
-                    ${membro.Data_Nasc},
-                    ${membro.CPF},
-                    ${membro.Naturalidade},
-                    ${membro.Estado_Civil},
-                    ${membro.Escolaridade},
-                    ${membro.Profissao},
-                    ${membro.Nm_Conjuge},
-                    ${membro.Endereco},
-                    ${membro.Comp_Endereco},
-                    ${membro.Bairro},
-                    ${membro.Cidade},
-                    ${membro.CEP},
-                    ${membro.Nm_Mae},
-                    ${membro.Nm_Pai}
-                )
-                ON CONFLICT (casdastro) DO NOTHING;
-            `;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            client.release();
+            throw error; // Lança o erro para o catch externo
         }
-        
-        return res.status(200).json({ message: `${membros.length} registros importados com sucesso!` });
 
     } catch (error) {
         console.error('Erro na importação em massa:', error);
