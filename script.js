@@ -641,11 +641,14 @@ async function saveMembro() {
         }
 
         if (!response.ok) {
-            let errorText = 'Erro ao salvar o membro.';
-            try {
+            const contentType = response.headers.get("content-type");
+            let errorText = 'Erro desconhecido ao salvar o membro.';
+            
+            // Verifica se a resposta é um JSON antes de tentar analisá-la
+            if (contentType && contentType.indexOf("application/json") !== -1) {
                 const error = await response.json();
                 errorText = error.message || error.error || errorText;
-            } catch (e) {
+            } else {
                 errorText = await response.text();
             }
             throw new Error(errorText);
