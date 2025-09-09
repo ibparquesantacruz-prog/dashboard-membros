@@ -1,0 +1,7 @@
+{
+  "name": "dashboard-membros-app",
+  "version": "1.0.0",
+  "dependencies": {
+    "@vercel/postgres": "latest"
+  }
+}
