@@ -13,24 +13,23 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Nenhum membro enviado para importação.' });
         }
         
-        // Converte strings vazias para null em todos os objetos de membro
-        const sanitizedMembros = membros.map(membro => {
-            const sanitizedMembro = {};
-            for (const key in membro) {
+        // Função auxiliar para converter strings vazias em null
+        const sanitizeData = (data) => {
+            const sanitized = {};
+            for (const key in data) {
                 // Remove espaços em branco antes de verificar se é uma string vazia
-                const value = typeof membro[key] === 'string' ? membro[key].trim() : membro[key];
-                sanitizedMembro[key] = value === '' ? null : value;
+                const value = typeof data[key] === 'string' ? data[key].trim() : data[key];
+                sanitized[key] = value === '' ? null : value;
             }
-            return sanitizedMembro;
-        });
+            return sanitized;
+        };
+
+        const sanitizedMembros = membros.map(membro => sanitizeData(membro));
         
-        // Iniciar uma transação para garantir que a operação seja atômica
-        // Primeiro, deletar todos os registros existentes (TRUNCATE)
+        // Limpar todos os registros existentes antes de importar
         await sql`TRUNCATE TABLE membros;`;
 
-        // Agora, inserir cada membro individualmente dentro de uma transação
-        // A biblioteca Vercel Postgres não suporta a sintaxe de `INSERT` com múltiplos valores (multi-row insert)
-        // de forma eficiente. A forma mais segura e compatível é iterar e inserir um por um.
+        // Iterar sobre a lista de membros e inserir cada um
         for (const membro of sanitizedMembros) {
             await sql`
                 INSERT INTO membros (casdastro, Nm_Membro, Status, Tem_Filhos, Sexo, Membro, Batizado, Celular, Data_Nasc, CPF, Naturalidade, Estado_Civil, Escolaridade, Profissao, Nm_Conjuge, Endereco, Comp_Endereco, Bairro, Cidade, CEP, Nm_Mae, Nm_Pai)
@@ -57,10 +56,11 @@ export default async function handler(req, res) {
                     ${membro.CEP},
                     ${membro.Nm_Mae},
                     ${membro.Nm_Pai}
-                );
+                )
+                ON CONFLICT (casdastro) DO NOTHING;
             `;
         }
-
+        
         return res.status(200).json({ message: `${membros.length} registros importados com sucesso!` });
 
     } catch (error) {
