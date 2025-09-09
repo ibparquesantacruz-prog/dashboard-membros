@@ -9,6 +9,15 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
+    // Função auxiliar para converter strings vazias em null
+    const sanitizeData = (data) => {
+        const sanitized = {};
+        for (const key in data) {
+            sanitized[key] = data[key] === '' ? null : data[key];
+        }
+        return sanitized;
+    };
+
     try {
         if (req.method === 'GET') {
             const { rows } = await sql`SELECT * FROM membros;`;
@@ -17,25 +26,40 @@ export default async function handler(req, res) {
 
         const data = req.body;
         if (!data || !data.casdastro) {
-            return res.status(400).json({ error: 'Dados inválidos ou incompletos.' });
+            return res.status(400).json({ error: 'Dados inválidos ou incompletos. O campo "casdastro" é obrigatório.' });
         }
         
-        // Nova validação para converter strings vazias em null
-        const sanitizedData = {};
-        for (const key in data) {
-            sanitizedData[key] = data[key] === '' ? null : data[key];
-        }
+        const sanitizedData = sanitizeData(data);
 
         if (req.method === 'POST') {
             await sql`
                 INSERT INTO membros (casdastro, Nm_Membro, Status, Tem_Filhos, Sexo, Membro, Batizado, Celular, Data_Nasc, CPF, Naturalidade, Estado_Civil, Escolaridade, Profissao, Nm_Conjuge, Endereco, Comp_Endereco, Bairro, Cidade, CEP, Nm_Mae, Nm_Pai)
                 VALUES (
-                    ${sanitizedData.casdastro}, ${sanitizedData.Nm_Membro}, ${sanitizedData.Status}, ${sanitizedData.Tem_Filhos}, ${sanitizedData.Sexo}, ${sanitizedData.Membro}, ${sanitizedData.Batizado}, ${sanitizedData.Celular}, ${sanitizedData.Data_Nasc}, ${sanitizedData.CPF},
-                    ${sanitizedData.Naturalidade}, ${sanitizedData.Estado_Civil}, ${sanitizedData.Escolaridade}, ${sanitizedData.Profissao}, ${sanitizedData.Nm_Conjuge}, ${sanitizedData.Endereco}, ${sanitizedData.Comp_Endereco},
-                    ${sanitizedData.Bairro}, ${sanitizedData.Cidade}, ${sanitizedData.CEP}, ${sanitizedData.Nm_Mae}, ${sanitizedData.Nm_Pai}
+                    ${sanitizedData.casdastro},
+                    ${sanitizedData.Nm_Membro},
+                    ${sanitizedData.Status},
+                    ${sanitizedData.Tem_Filhos},
+                    ${sanitizedData.Sexo},
+                    ${sanitizedData.Membro},
+                    ${sanitizedData.Batizado},
+                    ${sanitizedData.Celular},
+                    ${sanitizedData.Data_Nasc},
+                    ${sanitizedData.CPF},
+                    ${sanitizedData.Naturalidade},
+                    ${sanitizedData.Estado_Civil},
+                    ${sanitizedData.Escolaridade},
+                    ${sanitizedData.Profissao},
+                    ${sanitizedData.Nm_Conjuge},
+                    ${sanitizedData.Endereco},
+                    ${sanitizedData.Comp_Endereco},
+                    ${sanitizedData.Bairro},
+                    ${sanitizedData.Cidade},
+                    ${sanitizedData.CEP},
+                    ${sanitizedData.Nm_Mae},
+                    ${sanitizedData.Nm_Pai}
                 );
             `;
-            return res.status(201).json({ message: 'Membro adicionado com sucesso!' });
+            return res.status(201).json({ message: 'Membro criado com sucesso!' });
         }
 
         if (req.method === 'PUT') {
