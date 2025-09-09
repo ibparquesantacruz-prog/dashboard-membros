@@ -339,9 +339,10 @@ function showPreview(data) {
     
     previewData.forEach(membro => {
         const row = document.createElement('tr');
+        const statusColor = membro.Status === 'Ativo' ? 'bg-success' : (membro.Status === 'Inativo' ? 'bg-secondary' : 'bg-danger');
         row.innerHTML = `
             <td>${membro.Nm_Membro}</td>
-            <td><span class="badge ${membro.Status === 'Ativo' ? 'bg-success' : membro.Status === 'Inativo' ? 'bg-secondary' : 'bg-danger'}">${membro.Status}</span></td>
+            <td><span class="badge ${statusColor}">${membro.Status}</span></td>
             <td>${membro.Sexo}</td>
             <td>${membro.Membro}</td>
             <td>${membro.Batizado}</td>
@@ -640,8 +641,14 @@ async function saveMembro() {
         }
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Erro ao salvar o membro.');
+            let errorText = 'Erro ao salvar o membro.';
+            try {
+                const error = await response.json();
+                errorText = error.message || error.error || errorText;
+            } catch (e) {
+                errorText = await response.text();
+            }
+            throw new Error(errorText);
         }
         
         await fetchMembros();
