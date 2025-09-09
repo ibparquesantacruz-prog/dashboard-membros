@@ -14,6 +14,15 @@ export default async function handler(req, res) {
         if (!Array.isArray(membros) || membros.length === 0) {
             return res.status(400).json({ error: 'Nenhum membro enviado para importação.' });
         }
+        
+        // Converte strings vazias para null em todos os objetos de membro
+        const sanitizedMembros = membros.map(membro => {
+            const sanitizedMembro = {};
+            for (const key in membro) {
+                sanitizedMembro[key] = membro[key] === '' ? null : membro[key];
+            }
+            return sanitizedMembro;
+        });
 
         // Deletar todos os registros existentes antes de importar
         await client.sql`TRUNCATE TABLE membros;`;
@@ -26,7 +35,7 @@ export default async function handler(req, res) {
         ];
         
         // Mapeia os objetos de membros para um array de arrays de valores
-        const values = membros.map(membro => {
+        const values = sanitizedMembros.map(membro => {
             return columns.map(col => membro[col] || null);
         });
 
