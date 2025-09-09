@@ -605,21 +605,21 @@ async function saveMembro() {
         Sexo: document.getElementById('Sexo').value,
         Membro: document.getElementById('Membro').value,
         Batizado: document.getElementById('Batizado').value,
-        Celular: document.getElementById('Celular').value,
-        Data_Nasc: document.getElementById('Data_Nasc').value,
-        CPF: document.getElementById('CPF').value,
-        Naturalidade: document.getElementById('Naturalidade').value,
-        Estado_Civil: document.getElementById('Estado_Civil').value,
-        Escolaridade: document.getElementById('Escolaridade').value,
-        Profissao: document.getElementById('Profissao').value,
-        Nm_Conjuge: document.getElementById('Nm_Conjuge').value,
-        Endereco: document.getElementById('Endereco').value,
-        Comp_Endereco: document.getElementById('Comp_Endereco').value,
-        Bairro: document.getElementById('Bairro').value,
-        Cidade: document.getElementById('Cidade').value,
-        CEP: document.getElementById('CEP').value,
-        Nm_Mae: document.getElementById('Nm_Mae').value,
-        Nm_Pai: document.getElementById('Nm_Pai').value,
+        Celular: document.getElementById('Celular').value || null,
+        Data_Nasc: document.getElementById('Data_Nasc').value || null,
+        CPF: document.getElementById('CPF').value || null,
+        Naturalidade: document.getElementById('Naturalidade').value || null,
+        Estado_Civil: document.getElementById('Estado_Civil').value || null,
+        Escolaridade: document.getElementById('Escolaridade').value || null,
+        Profissao: document.getElementById('Profissao').value || null,
+        Nm_Conjuge: document.getElementById('Nm_Conjuge').value || null,
+        Endereco: document.getElementById('Endereco').value || null,
+        Comp_Endereco: document.getElementById('Comp_Endereco').value || null,
+        Bairro: document.getElementById('Bairro').value || null,
+        Cidade: document.getElementById('Cidade').value || null,
+        CEP: document.getElementById('CEP').value || null,
+        Nm_Mae: document.getElementById('Nm_Mae').value || null,
+        Nm_Pai: document.getElementById('Nm_Pai').value || null,
     };
     
     try {
@@ -644,7 +644,6 @@ async function saveMembro() {
             const contentType = response.headers.get("content-type");
             let errorText = 'Erro desconhecido ao salvar o membro.';
             
-            // Verifica se a resposta é um JSON antes de tentar analisá-la
             if (contentType && contentType.indexOf("application/json") !== -1) {
                 const error = await response.json();
                 errorText = error.message || error.error || errorText;
