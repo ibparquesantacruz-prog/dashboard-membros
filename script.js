@@ -1,28 +1,3 @@
-Olá! Com certeza posso ajudar a analisar o seu código e resolver esse problema de conexão. É um problema bastante comum ao integrar um frontend com um backend e banco de dados em plataformas como a Vercel.
-
-Vamos analisar o que está acontecendo e corrigir o que for necessário.
-
-Panorama Geral da Solução
-O erro "Erro ao carregar os dados. Verifique a conexão." que você está a ver é uma mensagem genérica de falha na função fetchMembros() no seu script.js. Isso significa que a requisição do seu site (frontend) para a sua API no Vercel (/api/membros) está a falhar.
-
-As causas mais prováveis são:
-
-Problema de Conexão da API com o Banco de Dados: A sua função serverless na Vercel não está a conseguir conectar-se ao banco de dados Neon. Isso geralmente ocorre por falta de configuração das variáveis de ambiente no projeto Vercel.
-
-Inconsistência na Lógica de Backup e Restauração: Identifiquei uma falha na sua lógica: a função de backup cria um arquivo CSV, mas a de restauração espera um arquivo JSON. Isso causaria um erro ao tentar restaurar os dados.
-
-Lógica de Importação Destrutiva: A sua API de importação em massa (membros-bulk.js) primeiro apaga todos os dados da tabela (TRUNCATE TABLE) antes de inserir os novos. Isso é muito arriscado. Vamos melhorar isso para que a importação atualize os registos existentes e adicione apenas os novos, sem apagar tudo.
-
-Vamos corrigir esses pontos. Abaixo estão os códigos completos e ajustados para cada arquivo que precisa de alteração.
-
-Passo 1: Correção dos Códigos
-Aqui estão as versões corrigidas dos seus arquivos. Apenas os arquivos que precisavam de mudanças (script.js e api/membros-bulk.js) foram alterados. Os outros estão corretos.
-
-script.js Corrigido
-Copie e cole todo o conteúdo abaixo no seu arquivo script.js.
-
-JavaScript
-
 // Variáveis globais
 let membros = [];
 let currentPage = 1;
@@ -62,24 +37,17 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 async function initializeApp() {
-    // Carregar dados da API
-    await fetchMembros();
-
-    // Configurar navegação
     setupNavigation();
-
-    // Configurar eventos
     setupEventListeners();
+    await fetchMembros();
 }
 
 async function fetchMembros() {
     try {
         const response = await fetch('/api/membros');
         if (!response.ok) {
-            // Tenta obter mais detalhes do erro da API
-            const errorData = await response.json().catch(() => null);
-            console.error('Erro da API:', errorData);
-            throw new Error(`Erro ao carregar os dados da API. Status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({ message: 'Resposta não JSON do servidor.' }));
+            throw new Error(`Erro da API: ${errorData.message || response.statusText}`);
         }
         membros = await response.json();
         updateDashboard();
@@ -91,15 +59,14 @@ async function fetchMembros() {
 }
 
 function setupNavigation() {
-    // Navegação do menu lateral
-    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+    // CORREÇÃO: Seleciona APENAS os links de navegação que possuem o atributo data-bs-target
+    document.querySelectorAll('.sidebar a.nav-link[data-bs-target]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const targetId = this.getAttribute('data-bs-target');
-            if (!targetId) return; // Ignora links sem target, como Backup e Restaurar
-
+            
             // Ativar link clicado e desativar outros
-            document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.sidebar a.nav-link[data-bs-target]').forEach(l => l.classList.remove('active'));
             this.classList.add('active');
             
             // Mostrar seção correspondente e esconder outras
@@ -250,7 +217,7 @@ function normalizeSexo(value) {
     const lowerValue = String(value).toLowerCase().trim();
     if (['masculino', 'm', 'homem'].includes(lowerValue)) return 'Masculino';
     if (['feminino', 'f', 'mulher'].includes(lowerValue)) return 'Feminino';
-    return value; // Retorna original se não reconhecido
+    return value; 
 }
 
 function normalizeStatus(value) {
@@ -258,7 +225,7 @@ function normalizeStatus(value) {
     if (['ativo', 'a'].includes(lowerValue)) return 'Ativo';
     if (['inativo', 'i'].includes(lowerValue)) return 'Inativo';
     if (['falecido', 'f'].includes(lowerValue)) return 'Falecido';
-    return value; // Retorna original se não reconhecido
+    return value; 
 }
 
 function debugCSV(file) {
@@ -279,25 +246,22 @@ function debugCSV(file) {
 
 function formatarData(data) {
     if (!data) return '';
-    // Formato AAAA-MM-DD (já está correto)
     if (/^\d{4}-\d{2}-\d{2}$/.test(data)) return data;
-    // Formato DD/MM/AAAA
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
         const [dia, mes, ano] = data.split('/');
         return `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
     }
-    // Tenta converter outros formatos
     try {
         const dataObj = new Date(data);
         if (!isNaN(dataObj.getTime())) return dataObj.toISOString().split('T')[0];
     } catch (e) { /* ignora erro */ }
-    return data; // Retorna original se não conseguir formatar
+    return data; 
 }
 
 function formatarCPF(cpf) {
     if (!cpf) return '';
     const apenasNumeros = cpf.toString().replace(/\D/g, '');
-    if (apenasNumeros.length !== 11) return cpf; // Retorna original se inválido
+    if (apenasNumeros.length !== 11) return cpf; 
     return apenasNumeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 }
 
@@ -329,6 +293,7 @@ function showPreview(data) {
 }
 
 function updateDashboard() {
+    if (!membros) return;
     document.getElementById('total-membros').textContent = membros.length;
     
     const ativos = membros.filter(m => m.Status === 'Ativo').length;
@@ -341,7 +306,6 @@ function updateDashboard() {
     const mesAtual = hoje.getMonth() + 1;
     const aniversariantes = membros.filter(m => {
         if (!m.Data_Nasc) return false;
-        // Adiciona 'T00:00:00' para evitar problemas com fuso horário
         const dataNasc = new Date(m.Data_Nasc + 'T00:00:00');
         return dataNasc.getMonth() + 1 === mesAtual;
     }).length;
@@ -351,6 +315,7 @@ function updateDashboard() {
 }
 
 function updateCharts() {
+    if (!membros) return;
     const statusCounts = {
         'Ativo': membros.filter(m => m.Status === 'Ativo').length,
         'Inativo': membros.filter(m => m.Status === 'Inativo').length,
@@ -370,10 +335,7 @@ function updateCharts() {
         type: 'doughnut',
         data: {
             labels: ['Ativo', 'Inativo', 'Falecido'],
-            datasets: [{
-                data: [statusCounts.Ativo, statusCounts.Inativo, statusCounts.Falecido],
-                backgroundColor: ['#1cc88a', '#858796', '#e74a3b'],
-            }]
+            datasets: [{ data: [statusCounts.Ativo, statusCounts.Inativo, statusCounts.Falecido], backgroundColor: ['#1cc88a', '#858796', '#e74a3b'] }]
         },
         options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
@@ -383,16 +345,14 @@ function updateCharts() {
         type: 'pie',
         data: {
             labels: ['Masculino', 'Feminino'],
-            datasets: [{
-                data: [sexoCounts.Masculino, sexoCounts.Feminino],
-                backgroundColor: ['#4e73df', '#f06292'],
-            }]
+            datasets: [{ data: [sexoCounts.Masculino, sexoCounts.Feminino], backgroundColor: ['#4e73df', '#f06292'] }]
         },
         options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 }
 
 function renderMembrosTable() {
+    if (!membros) return;
     const tableBody = document.getElementById('membrosTableBody');
     tableBody.innerHTML = '';
     
@@ -465,11 +425,9 @@ function renderPagination(totalPages) {
     }
 
     pagination.appendChild(createPageItem('Anterior', currentPage - 1, currentPage === 1));
-
     for (let i = 1; i <= totalPages; i++) {
         pagination.appendChild(createPageItem(i, i, false, currentPage === i));
     }
-
     pagination.appendChild(createPageItem('Próximo', currentPage + 1, currentPage === totalPages));
 }
 
@@ -477,8 +435,9 @@ function editMembro(memberId) {
     const membro = membros.find(m => m.casdastro == memberId);
     if (!membro) return;
     
-    document.getElementById('membroForm').reset();
-    document.getElementById('membroForm').classList.remove('was-validated');
+    const form = document.getElementById('membroForm');
+    form.reset();
+    form.classList.remove('was-validated');
 
     document.getElementById('modalTitle').textContent = 'Editar Membro';
     document.getElementById('membroId').value = membro.casdastro;
@@ -486,12 +445,11 @@ function editMembro(memberId) {
     for (const key in membro) {
         const element = document.getElementById(key);
         if (element) {
-            element.value = membro[key];
+            element.value = membro[key] || '';
         }
     }
     
-    const modal = new bootstrap.Modal(document.getElementById('adicionarMembroModal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('adicionarMembroModal')).show();
 }
 
 async function saveMembro() {
@@ -503,30 +461,18 @@ async function saveMembro() {
 
     const memberId = document.getElementById('membroId').value;
     const membroData = {};
-    const formFields = Object.keys(fieldMapping);
-
-    formFields.forEach(field => {
+    Object.keys(fieldMapping).forEach(field => {
         const element = document.getElementById(field);
-        if (element) {
-            membroData[field] = element.value || null;
-        }
+        if (element) membroData[field] = element.value || null;
     });
     
     try {
-        let response;
-        if (memberId) {
-            response = await fetch('/api/membros', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(membroData)
-            });
-        } else {
-            response = await fetch('/api/membros', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(membroData)
-            });
-        }
+        const method = memberId ? 'PUT' : 'POST';
+        const response = await fetch('/api/membros', {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(membroData)
+        });
 
         if (!response.ok) {
             const error = await response.json();
@@ -545,20 +491,17 @@ async function saveMembro() {
 
 function showSuccessModal(message) {
     document.getElementById('successMessage').textContent = message;
-    const modal = new bootstrap.Modal(document.getElementById('successModal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('successModal')).show();
 }
 
 function showErrorModal(message) {
     document.getElementById('errorMessage').textContent = message;
-    const modal = new bootstrap.Modal(document.getElementById('errorModal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('errorModal')).show();
 }
 
 function showDeleteConfirm(memberId) {
     memberToDelete = memberId;
-    const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('confirmDeleteModal')).show();
 }
 
 async function confirmDelete() {
@@ -595,27 +538,21 @@ function generateReport() {
     relatorioHeader.innerHTML = '';
     relatorioBody.innerHTML = '';
     
-    let headers = [];
-    
     if (reportType === 'aniversariantes') {
         const mes = prompt("Digite o número do mês (1-12):", new Date().getMonth() + 1);
         if (!mes || isNaN(mes) || mes < 1 || mes > 12) {
             showErrorModal("Mês inválido.");
             return;
         }
-
-        headers = ['Nome do Membro', 'Data de Nascimento'];
+        const headers = ['Nome do Membro', 'Data de Nascimento'];
         relatorioHeader.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
-
         const aniversariantes = membros
             .filter(m => m.Data_Nasc && new Date(m.Data_Nasc + 'T00:00:00').getMonth() + 1 == mes)
             .sort((a, b) => new Date(a.Data_Nasc + 'T00:00:00').getDate() - new Date(b.Data_Nasc + 'T00:00:00').getDate());
-
         if (aniversariantes.length === 0) {
             relatorioBody.innerHTML = `<tr><td colspan="${headers.length}">Nenhum aniversariante encontrado para o mês ${mes}.</td></tr>`;
             return;
         }
-
         relatorioBody.innerHTML = aniversariantes.map(m => `<tr><td>${m.Nm_Membro}</td><td>${formatarData(m.Data_Nasc).split('-').reverse().join('/')}</td></tr>`).join('');
         return;
     }
@@ -634,12 +571,10 @@ function generateReport() {
     relatorioHeader.innerHTML = config.headers.map(h => `<th>${h}</th>`).join('');
     const reportData = calculatePercentage(membros, config.field);
 
-    for (const [key, value] of Object.entries(reportData)) {
+    relatorioBody.innerHTML = Object.entries(reportData).map(([key, value]) => {
         const nomes = membros.filter(m => (m[config.field] || 'Não informado') === key).map(m => m.Nm_Membro).join(", ");
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${key}</td><td>${value.count}</td><td>${value.percentage}%</td><td>${nomes}</td>`;
-        relatorioBody.appendChild(row);
-    }
+        return `<tr><td>${key}</td><td>${value.count}</td><td>${value.percentage}%</td><td>${nomes}</td></tr>`;
+    }).join('');
 }
 
 function calculatePercentage(data, field) {
@@ -651,8 +586,7 @@ function calculatePercentage(data, field) {
     const total = data.length;
     return Object.fromEntries(
         Object.entries(counts).map(([key, count]) => [
-            key,
-            { count, percentage: total > 0 ? ((count / total) * 100).toFixed(2) : 0 }
+            key, { count, percentage: total > 0 ? ((count / total) * 100).toFixed(2) : 0 }
         ])
     );
 }
@@ -667,10 +601,8 @@ function exportReport() {
     table.querySelectorAll('tr').forEach(row => {
         let rowData = [];
         row.querySelectorAll('th, td').forEach(cell => {
-            let text = cell.innerText.replace(/"/g, '""'); // Escapa aspas duplas
-            if (/[",;\n]/.test(text)) {
-                text = `"${text}"`; // Adiciona aspas se contiver caracteres especiais
-            }
+            let text = cell.innerText.replace(/"/g, '""');
+            if (/[",;\n]/.test(text)) text = `"${text}"`;
             rowData.push(text);
         });
         csv.push(rowData.join(';'));
@@ -687,9 +619,7 @@ function backupData() {
         const row = headers.map(header => {
             const value = membro[header] || '';
             let escaped = String(value).replace(/"/g, '""');
-            if (/[",;\n]/.test(escaped)) {
-                escaped = `"${escaped}"`;
-            }
+            if (/[",;\n]/.test(escaped)) escaped = `"${escaped}"`;
             return escaped;
         }).join(';');
         csv += row + '\n';
@@ -699,7 +629,6 @@ function backupData() {
 }
 
 function downloadCSV(csvContent, fileName) {
-    // Adiciona BOM para garantir a codificação UTF-8 correta no Excel
     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -719,7 +648,6 @@ function restoreData(evt) {
     const file = evt.target.files[0];
     if (!file) return;
 
-    // A função de restauração agora usa a mesma lógica da importação
     Papa.parse(file, {
         header: true,
         delimiter: ';',
@@ -731,7 +659,6 @@ function restoreData(evt) {
                 showErrorModal(`Erro ao ler o arquivo de restauração: ${results.errors[0].message}`);
                 return;
             }
-
             const restoredData = results.data.filter(m => m.Nm_Membro && m.Nm_Membro.trim());
             if (restoredData.length > 0) {
                 try {
@@ -754,10 +681,8 @@ function restoreData(evt) {
                 showErrorModal('O arquivo de restauração não contém dados válidos.');
             }
         },
-        error: (error) => {
-            showErrorModal(`Erro ao processar o arquivo de restauração: ${error.message}`);
-        }
+        error: (error) => showErrorModal(`Erro ao processar o arquivo de restauração: ${error.message}`)
     });
     
-    evt.target.value = ''; // Limpa o input para permitir selecionar o mesmo arquivo novamente
+    evt.target.value = '';
 }
