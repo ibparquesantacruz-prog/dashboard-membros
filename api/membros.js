@@ -13,7 +13,8 @@ export default async function handler(req, res) {
     const sanitizeData = (data) => {
         const sanitized = {};
         for (const key in data) {
-            sanitized[key] = data[key] === '' ? null : data[key];
+            const value = typeof data[key] === 'string' ? data[key].trim() : data[key];
+            sanitized[key] = value === '' ? null : value;
         }
         return sanitized;
     };
@@ -57,7 +58,8 @@ export default async function handler(req, res) {
                     ${sanitizedData.CEP},
                     ${sanitizedData.Nm_Mae},
                     ${sanitizedData.Nm_Pai}
-                );
+                )
+                ON CONFLICT (casdastro) DO NOTHING;
             `;
             return res.status(201).json({ message: 'Membro criado com sucesso!' });
         }
