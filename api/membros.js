@@ -14,6 +14,10 @@ module.exports = async function handler(req, res) {
         }
         
         const data = req.body;
+        
+        // --- LINHA DE DEBUG IMPORTANTE ---
+        console.log(`[${req.method}] DADOS RECEBIDOS:`, data);
+
         if (!data || !data.casdastro) {
             return res.status(400).json({ error: 'Dados inválidos ou incompletos.' });
         }
