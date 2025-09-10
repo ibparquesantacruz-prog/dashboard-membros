@@ -1,82 +1,109 @@
 import { sql } from '@vercel/postgres';
-import { randomUUID } from 'crypto';
 
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        res.setHeader('Allow', ['POST']);
-        return res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
     }
 
+    // Função auxiliar para converter strings vazias em null
+    const sanitizeData = (data) => {
+        const sanitized = {};
+        for (const key in data) {
+            const value = typeof data[key] === 'string' ? data[key].trim() : data[key];
+            sanitized[key] = value === '' ? null : value;
+        }
+        return sanitized;
+    };
+
     try {
-        const membros = req.body;
-
-        if (!Array.isArray(membros) || membros.length === 0) {
-            return res.status(400).json({ error: 'Nenhum membro enviado para importação.' });
+        if (req.method === 'GET') {
+            const { rows } = await sql`SELECT * FROM membros;`;
+            return res.status(200).json(rows);
         }
 
-        const sanitizeData = (data) => {
-            const sanitized = {};
-            for (const key in data) {
-                const value = typeof data[key] === 'string' ? data[key].trim() : data[key];
-                sanitized[key] = value === '' ? null : value;
-            }
-            // Se não vier casdastro, gera um UUID
-            if (!sanitized.casdastro) {
-                sanitized.casdastro = randomUUID();
-            }
-            return sanitized;
-        };
+        const data = req.body;
+        if (!data || !data.casdastro) {
+            return res.status(400).json({ error: 'Dados inválidos ou incompletos. O campo "casdastro" é obrigatório.' });
+        }
+        
+        const sanitizedData = sanitizeData(data);
 
-        const sanitizedMembros = membros.map(m => sanitizeData(m));
-
-        // Apagar todos antes de importar
-        await sql`DELETE FROM membros;`;
-
-        for (const membro of sanitizedMembros) {
+        if (req.method === 'POST') {
             await sql`
-                INSERT INTO membros (
-                    casdastro, Nm_Membro, Status, Tem_Filhos, Sexo, Membro, Batizado,
-                    Celular, Data_Nasc, CPF, Naturalidade, Estado_Civil, Escolaridade,
-                    Profissao, Nm_Conjuge, Endereco, Comp_Endereco, Bairro, Cidade, CEP,
-                    Nm_Mae, Nm_Pai
-                )
+                INSERT INTO membros (casdastro, Nm_Membro, Status, Tem_Filhos, Sexo, Membro, Batizado, Celular, Data_Nasc, CPF, Naturalidade, Estado_Civil, Escolaridade, Profissao, Nm_Conjuge, Endereco, Comp_Endereco, Bairro, Cidade, CEP, Nm_Mae, Nm_Pai)
                 VALUES (
-                    ${membro.casdastro}, ${membro.Nm_Membro}, ${membro.Status}, ${membro.Tem_Filhos},
-                    ${membro.Sexo}, ${membro.Membro}, ${membro.Batizado}, ${membro.Celular},
-                    ${membro.Data_Nasc}, ${membro.CPF}, ${membro.Naturalidade}, ${membro.Estado_Civil},
-                    ${membro.Escolaridade}, ${membro.Profissao}, ${membro.Nm_Conjuge}, ${membro.Endereco},
-                    ${membro.Comp_Endereco}, ${membro.Bairro}, ${membro.Cidade}, ${membro.CEP},
-                    ${membro.Nm_Mae}, ${membro.Nm_Pai}
+                    ${sanitizedData.casdastro},
+                    ${sanitizedData.Nm_Membro},
+                    ${sanitizedData.Status},
+                    ${sanitizedData.Tem_Filhos},
+                    ${sanitizedData.Sexo},
+                    ${sanitizedData.Membro},
+                    ${sanitizedData.Batizado},
+                    ${sanitizedData.Celular},
+                    ${sanitizedData.Data_Nasc},
+                    ${sanitizedData.CPF},
+                    ${sanitizedData.Naturalidade},
+                    ${sanitizedData.Estado_Civil},
+                    ${sanitizedData.Escolaridade},
+                    ${sanitizedData.Profissao},
+                    ${sanitizedData.Nm_Conjuge},
+                    ${sanitizedData.Endereco},
+                    ${sanitizedData.Comp_Endereco},
+                    ${sanitizedData.Bairro},
+                    ${sanitizedData.Cidade},
+                    ${sanitizedData.CEP},
+                    ${sanitizedData.Nm_Mae},
+                    ${sanitizedData.Nm_Pai}
                 )
-                ON CONFLICT (casdastro) DO UPDATE SET
-                    Nm_Membro = EXCLUDED.Nm_Membro,
-                    Status = EXCLUDED.Status,
-                    Tem_Filhos = EXCLUDED.Tem_Filhos,
-                    Sexo = EXCLUDED.Sexo,
-                    Membro = EXCLUDED.Membro,
-                    Batizado = EXCLUDED.Batizado,
-                    Celular = EXCLUDED.Celular,
-                    Data_Nasc = EXCLUDED.Data_Nasc,
-                    CPF = EXCLUDED.CPF,
-                    Naturalidade = EXCLUDED.Naturalidade,
-                    Estado_Civil = EXCLUDED.Estado_Civil,
-                    Escolaridade = EXCLUDED.Escolaridade,
-                    Profissao = EXCLUDED.Profissao,
-                    Nm_Conjuge = EXCLUDED.Nm_Conjuge,
-                    Endereco = EXCLUDED.Endereco,
-                    Comp_Endereco = EXCLUDED.Comp_Endereco,
-                    Bairro = EXCLUDED.Bairro,
-                    Cidade = EXCLUDED.Cidade,
-                    CEP = EXCLUDED.CEP,
-                    Nm_Mae = EXCLUDED.Nm_Mae,
-                    Nm_Pai = EXCLUDED.Nm_Pai;
+                ON CONFLICT (casdastro) DO NOTHING;
             `;
+            return res.status(201).json({ message: 'Membro criado com sucesso!' });
         }
 
-        return res.status(200).json({ message: `${membros.length} registros importados com sucesso!` });
+        if (req.method === 'PUT') {
+            await sql`
+                UPDATE membros
+                SET
+                    Nm_Membro = ${sanitizedData.Nm_Membro},
+                    Status = ${sanitizedData.Status},
+                    Tem_Filhos = ${sanitizedData.Tem_Filhos},
+                    Sexo = ${sanitizedData.Sexo},
+                    Membro = ${sanitizedData.Membro},
+                    Batizado = ${sanitizedData.Batizado},
+                    Celular = ${sanitizedData.Celular},
+                    Data_Nasc = ${sanitizedData.Data_Nasc},
+                    CPF = ${sanitizedData.CPF},
+                    Naturalidade = ${sanitizedData.Naturalidade},
+                    Estado_Civil = ${sanitizedData.Estado_Civil},
+                    Escolaridade = ${sanitizedData.Escolaridade},
+                    Profissao = ${sanitizedData.Profissao},
+                    Nm_Conjuge = ${sanitizedData.Nm_Conjuge},
+                    Endereco = ${sanitizedData.Endereco},
+                    Comp_Endereco = ${sanitizedData.Comp_Endereco},
+                    Bairro = ${sanitizedData.Bairro},
+                    Cidade = ${sanitizedData.Cidade},
+                    CEP = ${sanitizedData.CEP},
+                    Nm_Mae = ${sanitizedData.Nm_Mae},
+                    Nm_Pai = ${sanitizedData.Nm_Pai}
+                WHERE casdastro = ${sanitizedData.casdastro};
+            `;
+            return res.status(200).json({ message: 'Membro atualizado com sucesso!' });
+        }
+
+        if (req.method === 'DELETE') {
+            await sql`DELETE FROM membros WHERE casdastro = ${sanitizedData.casdastro};`;
+            return res.status(200).json({ message: 'Membro excluído com sucesso!' });
+        }
+
+        res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
+        return res.status(405).end(`Method ${req.method} Not Allowed`);
 
     } catch (error) {
-        console.error('Erro na importação em massa:', error);
-        return res.status(500).json({ error: 'Erro ao importar dados em massa.', details: error.message });
+        console.error('API Error:', error);
+        return res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
     }
 }
