@@ -59,17 +59,14 @@ async function fetchMembros() {
 }
 
 function setupNavigation() {
-    // CORREÇÃO: Seleciona APENAS os links de navegação que possuem o atributo data-bs-target
     document.querySelectorAll('.sidebar a.nav-link[data-bs-target]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const targetId = this.getAttribute('data-bs-target');
             
-            // Ativar link clicado e desativar outros
             document.querySelectorAll('.sidebar a.nav-link[data-bs-target]').forEach(l => l.classList.remove('active'));
             this.classList.add('active');
             
-            // Mostrar seção correspondente e esconder outras
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.add('d-none');
             });
@@ -79,30 +76,78 @@ function setupNavigation() {
 }
 
 function setupEventListeners() {
-    // Importar CSV
     document.getElementById('importCsvBtn').addEventListener('click', importCSV);
     document.getElementById('clearCsvBtn').addEventListener('click', clearCSV);
     
-    // Buscar membros
     document.getElementById('searchInput').addEventListener('input', renderMembrosTable);
     document.getElementById('statusFilter').addEventListener('change', renderMembrosTable);
     document.getElementById('membroFilter').addEventListener('change', renderMembrosTable);
     
-    // Salvar membro
     document.getElementById('saveMembroBtn').addEventListener('click', saveMembro);
     
-    // Gerar relatório
     document.getElementById('gerarRelatorioBtn').addEventListener('click', generateReport);
     document.getElementById('exportarRelatorioBtn').addEventListener('click', exportReport);
     
-    // Confirmação de exclusão
     document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
     
-    // Backup e restauração
     document.getElementById('backupBtn').addEventListener('click', backupData);
     document.getElementById('restoreBtn').addEventListener('click', triggerRestore);
     document.getElementById('restoreFile').addEventListener('change', restoreData);
 }
+
+function renderMembrosTable() {
+    if (!membros) return;
+    const tableBody = document.getElementById('membrosTableBody');
+    tableBody.innerHTML = '';
+    
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const membroFilter = document.getElementById('membroFilter').value;
+    
+    const filteredMembros = membros.filter(membro => {
+        // --- ESTA É A LINHA CORRIGIDA ---
+        const matchesSearch = (membro.Nm_Membro || '').toLowerCase().includes(searchTerm);
+        const matchesStatus = !statusFilter || membro.Status === statusFilter;
+        const matchesMembro = !membroFilter || membro.Membro === membroFilter;
+        return matchesSearch && matchesStatus && matchesMembro;
+    });
+    
+    const totalPages = Math.ceil(filteredMembros.length / itemsPerPage);
+    currentPage = Math.min(currentPage, totalPages || 1);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedMembros = filteredMembros.slice(startIndex, startIndex + itemsPerPage);
+    
+    paginatedMembros.forEach(membro => {
+        const row = document.createElement('tr');
+        const statusColor = membro.Status === 'Ativo' ? 'bg-success' : (membro.Status === 'Inativo' ? 'bg-secondary' : 'bg-danger');
+        row.innerHTML = `
+            <td>${membro.Nm_Membro || 'Nome não informado'}</td>
+            <td><span class="badge ${statusColor}">${membro.Status || '-'}</span></td>
+            <td>${membro.Sexo || '-'}</td>
+            <td>${membro.Membro || '-'}</td>
+            <td>${membro.Batizado || '-'}</td>
+            <td>${membro.Celular || '-'}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary edit-btn" data-id="${membro.casdastro}" title="Editar"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${membro.casdastro}" title="Excluir"><i class="bi bi-trash"></i></button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+    
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => editMembro(btn.dataset.id));
+    });
+    
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => showDeleteConfirm(btn.dataset.id));
+    });
+    
+    renderPagination(totalPages);
+}
+
+// O resto das funções (importCSV, updateDashboard, etc.) permanecem as mesmas das versões anteriores.
+// Colei o código completo para garantir que não haja enganos.
 
 function importCSV() {
     const fileInput = document.getElementById('csvFile');
@@ -349,56 +394,6 @@ function updateCharts() {
         },
         options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
-}
-
-function renderMembrosTable() {
-    if (!membros) return;
-    const tableBody = document.getElementById('membrosTableBody');
-    tableBody.innerHTML = '';
-    
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const statusFilter = document.getElementById('statusFilter').value;
-    const membroFilter = document.getElementById('membroFilter').value;
-    
-    const filteredMembros = membros.filter(membro => {
-        const matchesSearch = membro.Nm_Membro.toLowerCase().includes(searchTerm);
-        const matchesStatus = !statusFilter || membro.Status === statusFilter;
-        const matchesMembro = !membroFilter || membro.Membro === membroFilter;
-        return matchesSearch && matchesStatus && matchesMembro;
-    });
-    
-    const totalPages = Math.ceil(filteredMembros.length / itemsPerPage);
-    currentPage = Math.min(currentPage, totalPages || 1);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedMembros = filteredMembros.slice(startIndex, startIndex + itemsPerPage);
-    
-    paginatedMembros.forEach(membro => {
-        const row = document.createElement('tr');
-        const statusColor = membro.Status === 'Ativo' ? 'bg-success' : (membro.Status === 'Inativo' ? 'bg-secondary' : 'bg-danger');
-        row.innerHTML = `
-            <td>${membro.Nm_Membro}</td>
-            <td><span class="badge ${statusColor}">${membro.Status}</span></td>
-            <td>${membro.Sexo}</td>
-            <td>${membro.Membro}</td>
-            <td>${membro.Batizado}</td>
-            <td>${membro.Celular || '-'}</td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary edit-btn" data-id="${membro.casdastro}" title="Editar"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${membro.casdastro}" title="Excluir"><i class="bi bi-trash"></i></button>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
-    
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', () => editMembro(btn.dataset.id));
-    });
-    
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => showDeleteConfirm(btn.dataset.id));
-    });
-    
-    renderPagination(totalPages);
 }
 
 function renderPagination(totalPages) {
@@ -659,7 +654,7 @@ function restoreData(evt) {
                 showErrorModal(`Erro ao ler o arquivo de restauração: ${results.errors[0].message}`);
                 return;
             }
-            const restoredData = results.data.filter(m => m.Nm_Membro && m.Nm_Membro.trim());
+            const restoredData = results.data.filter(m => m.casdastro && m.casdastro.trim());
             if (restoredData.length > 0) {
                 try {
                     const response = await fetch('/api/membros-bulk', {
