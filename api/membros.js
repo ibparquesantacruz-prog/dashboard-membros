@@ -1,4 +1,5 @@
 import { sql } from '@vercel/postgres';
+import { randomUUID } from 'crypto';
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,62 +10,43 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    // Função auxiliar para converter strings vazias em null
     const sanitizeData = (data) => {
         const sanitized = {};
         for (const key in data) {
             const value = typeof data[key] === 'string' ? data[key].trim() : data[key];
             sanitized[key] = value === '' ? null : value;
         }
+        if (req.method === 'POST' && !sanitized.casdastro) {
+            sanitized.casdastro = randomUUID();
+        }
         return sanitized;
     };
 
     try {
-        if (req.method === 'GET') {
-            const { rows } = await sql`SELECT * FROM membros;`;
-            return res.status(200).json(rows);
-        }
-
         const data = req.body;
-        if (!data || !data.casdastro) {
-            return res.status(400).json({ error: 'Dados inválidos ou incompletos. O campo "casdastro" é obrigatório.' });
-        }
         
         const sanitizedData = sanitizeData(data);
+        const { casdastro } = sanitizedData;
 
         if (req.method === 'POST') {
             await sql`
                 INSERT INTO membros (casdastro, Nm_Membro, Status, Tem_Filhos, Sexo, Membro, Batizado, Celular, Data_Nasc, CPF, Naturalidade, Estado_Civil, Escolaridade, Profissao, Nm_Conjuge, Endereco, Comp_Endereco, Bairro, Cidade, CEP, Nm_Mae, Nm_Pai)
                 VALUES (
-                    ${sanitizedData.casdastro},
-                    ${sanitizedData.Nm_Membro},
-                    ${sanitizedData.Status},
-                    ${sanitizedData.Tem_Filhos},
-                    ${sanitizedData.Sexo},
-                    ${sanitizedData.Membro},
-                    ${sanitizedData.Batizado},
-                    ${sanitizedData.Celular},
-                    ${sanitizedData.Data_Nasc},
-                    ${sanitizedData.CPF},
-                    ${sanitizedData.Naturalidade},
-                    ${sanitizedData.Estado_Civil},
-                    ${sanitizedData.Escolaridade},
-                    ${sanitizedData.Profissao},
-                    ${sanitizedData.Nm_Conjuge},
-                    ${sanitizedData.Endereco},
-                    ${sanitizedData.Comp_Endereco},
-                    ${sanitizedData.Bairro},
-                    ${sanitizedData.Cidade},
-                    ${sanitizedData.CEP},
-                    ${sanitizedData.Nm_Mae},
-                    ${sanitizedData.Nm_Pai}
-                )
-                ON CONFLICT (casdastro) DO NOTHING;
+                    ${sanitizedData.casdastro}, ${sanitizedData.Nm_Membro}, ${sanitizedData.Status}, ${sanitizedData.Tem_Filhos},
+                    ${sanitizedData.Sexo}, ${sanitizedData.Membro}, ${sanitizedData.Batizado}, ${sanitizedData.Celular},
+                    ${sanitizedData.Data_Nasc}, ${sanitizedData.CPF}, ${sanitizedData.Naturalidade}, ${sanitizedData.Estado_Civil},
+                    ${sanitizedData.Escolaridade}, ${sanitizedData.Profissao}, ${sanitizedData.Nm_Conjuge}, ${sanitizedData.Endereco},
+                    ${sanitizedData.Comp_Endereco}, ${sanitizedData.Bairro}, ${sanitizedData.Cidade}, ${sanitizedData.CEP},
+                    ${sanitizedData.Nm_Mae}, ${sanitizedData.Nm_Pai}
+                );
             `;
             return res.status(201).json({ message: 'Membro criado com sucesso!' });
         }
 
         if (req.method === 'PUT') {
+            if (!casdastro) {
+                return res.status(400).json({ error: 'Dados inválidos ou incompletos. O campo "casdastro" é obrigatório para atualização.' });
+            }
             await sql`
                 UPDATE membros
                 SET
@@ -89,14 +71,22 @@ export default async function handler(req, res) {
                     CEP = ${sanitizedData.CEP},
                     Nm_Mae = ${sanitizedData.Nm_Mae},
                     Nm_Pai = ${sanitizedData.Nm_Pai}
-                WHERE casdastro = ${sanitizedData.casdastro};
+                WHERE casdastro = ${casdastro};
             `;
             return res.status(200).json({ message: 'Membro atualizado com sucesso!' });
         }
-
+        
         if (req.method === 'DELETE') {
-            await sql`DELETE FROM membros WHERE casdastro = ${sanitizedData.casdastro};`;
+            if (!casdastro) {
+                return res.status(400).json({ error: 'Dados inválidos ou incompletos. O campo "casdastro" é obrigatório para exclusão.' });
+            }
+            await sql`DELETE FROM membros WHERE casdastro = ${casdastro};`;
             return res.status(200).json({ message: 'Membro excluído com sucesso!' });
+        }
+
+        if (req.method === 'GET') {
+            const { rows } = await sql`SELECT * FROM membros;`;
+            return res.status(200).json(rows);
         }
 
         res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
