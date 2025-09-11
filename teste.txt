@@ -1,3 +1,0 @@
-git add .
-git commit -m "Uma mensagem descritiva das suas alterações"
-git push origin main
