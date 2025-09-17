@@ -1,4 +1,4 @@
-// /script.js — Front unificado (versão final)
+// /script.js — Front unificado (com correção do input de Data_Nasc no modal)
 
 // ===================== Config =====================
 const API_BASE_URL = ''; // mesma origem (Vercel)
@@ -21,15 +21,36 @@ function simNaoToSN(v){
 }
 function toISODate(d){ 
   if(!d) return null; 
-  if(/^\d{4}-\d{2}-\d{2}$/.test(d)) return d; 
-  const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(d)); 
-  return m?`${m[3]}-${m[2]}-${m[1]}`:d; 
+  if(typeof d === 'string'){
+    if(/^\d{4}-\d{2}-\d{2}$/.test(d)) return d; 
+    const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(d); 
+    if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+    if (/^\d{4}-\d{2}-\d{2}T/.test(d)) return d.slice(0,10);
+  }
+  const dt = new Date(d);
+  if (!isNaN(dt.getTime())) {
+    const yyyy = dt.getFullYear();
+    const mm = String(dt.getMonth()+1).padStart(2,'0');
+    const dd = String(dt.getDate()).padStart(2,'0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return d;
 }
 function toInputDate(d) {
   if (!d) return '';
-  if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
-  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(d);
-  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  if (typeof d === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;                  // 2025-09-17
+    if (/^\d{4}-\d{2}-\d{2}T/.test(d)) return d.slice(0, 10);      // 2025-09-17T00:00:00Z
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(d);               // 17/09/2025
+    if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  }
+  const dt = new Date(d);                                          // fallback seguro
+  if (!isNaN(dt.getTime())) {
+    const yyyy = dt.getFullYear();
+    const mm = String(dt.getMonth()+1).padStart(2,'0');
+    const dd = String(dt.getDate()).padStart(2,'0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
   return '';
 }
 function mapFromApi(r){
@@ -109,7 +130,7 @@ function setupEventListeners() {
   const vf = document.getElementById('vinculo-filter'); if (vf) vf.addEventListener('change', filterMembers);
 
   // Botão novo membro
-  const addBtn = document.getElementById('add-member-btn'); if (addBtn) addBtn.addEventListener('click', () => openMemberModal());
+  const addBtn = document.getElementById('add-member-btn'); if (addBtn) addEventListener('click', () => openMemberModal());
 
   // Form salvar
   const form = document.getElementById('member-form');
@@ -276,7 +297,14 @@ function closeMemberModal(){ const modal = document.getElementById('member-modal
 function fillForm(member) {
   for (const key in member) {
     const input = document.getElementById(key);
-    if (input) input.value = member[key] || '';
+    if (!input) continue;
+
+    if (key === 'Data_Nasc') {
+      // 👇 Conversão correta para input[type="date"]
+      input.value = toInputDate(member[key]);
+    } else {
+      input.value = member[key] ?? '';
+    }
   }
 }
 
@@ -388,7 +416,12 @@ function renderBirthdayTable() {
     tbody.appendChild(tr);
   });
 }
-function calculateAge(birth){ const today = new Date(); let a = today.getFullYear() - birth.getFullYear(); const adj = (today.getMonth()<birth.getMonth()) || (today.getMonth()===birth.getMonth() && today.getDate()<birth.getDate()); return a - (adj?1:0); }
+function calculateAge(birth){ 
+  const today = new Date(); 
+  let a = today.getFullYear() - birth.getFullYear(); 
+  const adj = (today.getMonth()<birth.getMonth()) || (today.getMonth()===birth.getMonth() && today.getDate()<birth.getDate()); 
+  return a - (adj?1:0); 
+}
 
 // ===================== Relatórios =====================
 function generateReport(type) {
@@ -523,8 +556,20 @@ async function downloadBackup() {
 }
 
 // ===================== Util =====================
-function getPaginatedMembers(){ const start=(currentPage-1)*membersPerPage; const end=start+membersPerPage; return members.slice(start,end); }
-function formatDate(dateStr){ if(!dateStr) return '-'; const d=new Date(dateStr); if (isNaN(d.getTime())) return '-'; const dd=String(d.getUTCDate()).padStart(2,'0'); const mm=String(d.getUTCMonth()+1).padStart(2,'0'); const yy=d.getUTCFullYear(); return `${dd}/${mm}/${yy}`; }
+function getPaginatedMembers(){ 
+  const start=(currentPage-1)*membersPerPage; 
+  const end=start+membersPerPage; 
+  return members.slice(start,end); 
+}
+function formatDate(dateStr){ 
+  if(!dateStr) return '-'; 
+  const d=new Date(dateStr); 
+  if (isNaN(d.getTime())) return '-'; 
+  const dd=String(d.getUTCDate()).padStart(2,'0'); 
+  const mm=String(d.getUTCMonth()+1).padStart(2,'0'); 
+  const yy=d.getUTCFullYear(); 
+  return `${dd}/${mm}/${yy}`; 
+}
 
 // Mostra dashboard no início
 showSection('dashboard');
