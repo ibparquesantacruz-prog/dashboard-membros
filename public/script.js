@@ -1,4 +1,4 @@
-// /script.js — Front unificado (corrigido)
+// /script.js — Front unificado (versão final)
 
 // ===================== Config =====================
 const API_BASE_URL = ''; // mesma origem (Vercel)
@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCharts();
   loadMembers();
 });
+
 // ===================== Eventos =====================
 function setupEventListeners() {
   // Navegação por data-section (sidebar)
@@ -163,6 +164,185 @@ function updateDashboard() {
 
 function setText(id, value){ const el = document.getElementById(id); if (el) el.textContent = value; }
 
+// ===================== Tabela de membros =====================
+function renderMembersTable(filteredMembers = null) {
+  const tableBody = document.getElementById('members-table-body');
+  if (!tableBody) return;
+  tableBody.innerHTML = '';
+
+  const data = (filteredMembers || getPaginatedMembers());
+
+  data.forEach(member => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${member.Nm_Membro}</td>
+      <td>${member.Status}</td>
+      <td>${member.Sexo}</td>
+      <td>${member.Tp_Vinculo}</td>
+      <td>${formatDate(member.Data_Nasc)}</td>
+      <td>${member.Celular || '-'}</td>
+      <td>${member.Tem_Filhos || '-'}</td>
+      <td>${member.Batizado || '-'}</td>
+      <td>
+        <button class="btn-action edit-btn" data-id="${member.Id}">✏️</button>
+        <button class="btn-action delete-btn" data-id="${member.Id}">🗑️</button>
+      </td>
+    `;
+    tableBody.appendChild(tr);
+  });
+
+  document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', () => openMemberModal(btn.getAttribute('data-id'))));
+  document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', () => openDeleteModal(btn.getAttribute('data-id'))));
+
+  renderPagination((filteredMembers || members).length);
+}
+
+function renderPagination(total) {
+  const pagination = document.getElementById('pagination');
+  if (!pagination) return;
+  pagination.innerHTML = '';
+
+  const totalPages = Math.ceil(total / membersPerPage);
+  if (totalPages <= 1) return;
+
+  const makeBtn = (txt, onClick, active=false) => {
+    const b = document.createElement('button'); b.textContent = txt; if (active) b.classList.add('active'); b.addEventListener('click', onClick); return b;
+  };
+
+  if (currentPage > 1) pagination.appendChild(makeBtn('«', () => { currentPage--; renderMembersTable(); }));
+  for (let i=1; i<=totalPages; i++){ pagination.appendChild(makeBtn(String(i), () => { currentPage=i; renderMembersTable(); }, i===currentPage)); }
+  if (currentPage < totalPages) pagination.appendChild(makeBtn('»', () => { currentPage++; renderMembersTable(); }));
+}
+
+// ===================== Filtros =====================
+function filterMembers() {
+  const searchTerm = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const statusFilter = document.getElementById('status-filter')?.value || '';
+  const genderFilter = document.getElementById('gender-filter')?.value || '';
+  const vinculoFilter = document.getElementById('vinculo-filter')?.value || '';
+
+  const filtered = members.filter(m => {
+    const matchesSearch = m.Nm_Membro.toLowerCase().includes(searchTerm);
+    const matchesStatus = !statusFilter || m.Status === statusFilter;
+    const matchesGender = !genderFilter || m.Sexo === genderFilter;
+    const matchesVinculo = !vinculoFilter || m.Tp_Vinculo === vinculoFilter;
+    return matchesSearch && matchesStatus && matchesGender && matchesVinculo;
+  });
+
+  currentPage = 1;
+  renderMembersTable(filtered);
+}
+
+// ===================== Seções =====================
+function showSection(section) {
+  document.querySelectorAll('section, .section').forEach(s => s.style.display = 'none');
+  const el = document.getElementById(`${section}-section`);
+  if (el) el.style.display = 'block';
+  setText('section-title', getSectionTitle(section));
+}
+
+function getSectionTitle(section) {
+  const titles = {
+    'dashboard': 'Dashboard de Membros',
+    'membros': 'Gerenciamento de Membros',
+    'relatorios': 'Relatórios',
+    'importacao': 'Importar Dados'
+  };
+  return titles[section] || 'Dashboard';
+}
+
+// ===================== CRUD - Modais =====================
+function openMemberModal(id = null) {
+  const modal = document.getElementById('member-modal');
+  const form = document.getElementById('member-form');
+  const title = document.getElementById('modal-title');
+  if (!modal || !form || !title) return;
+
+  if (id !== null) {
+    title.textContent = 'Editar Membro';
+    currentMemberId = Number(id);
+    const m = members.find(x => String(x.Id) === String(id));
+    if (m) fillForm(m);
+  } else {
+    title.textContent = 'Adicionar Novo Membro';
+    currentMemberId = null;
+    form.reset();
+  }
+  modal.style.display = 'block';
+}
+
+function closeMemberModal(){ const modal = document.getElementById('member-modal'); if (modal) modal.style.display = 'none'; }
+
+function fillForm(member) {
+  for (const key in member) {
+    const input = document.getElementById(key);
+    if (input) input.value = member[key] || '';
+  }
+}
+
+async function saveMember() {
+  const form = document.getElementById('member-form');
+  if (!form) return;
+
+  const formData = new FormData(form);
+  const member = {};
+  for (const [k,v] of formData.entries()) member[k] = v;
+
+  // garante Tp_Vinculo (se algum CSV/form usar "Membro: Sim/Não")
+  if (!member.Tp_Vinculo && member.Membro) {
+    member.Tp_Vinculo = String(member.Membro).toLowerCase().startsWith('s') ? 'Membro' : 'Congregado';
+  }
+
+  const payload = mapToApi(member);
+
+  try {
+    const url = currentMemberId !== null 
+      ? `${API_BASE_URL}/api/membros/${currentMemberId}` 
+      : `${API_BASE_URL}/api/membros`;
+    const method = currentMemberId !== null ? 'PUT' : 'POST';
+
+    const resp = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!resp.ok) {
+      const data = await resp.json().catch(()=>({}));
+      const msg = data?.error ? ` (${data.error})` : '';
+      throw new Error(`HTTP ${resp.status}${msg}`);
+    }
+
+    await loadMembers();
+    closeMemberModal();
+  } catch (e) {
+    console.error('Erro ao salvar membro:', e);
+    alert(`Erro ao salvar membro: ${e.message}`);
+  }
+}
+
+function openDeleteModal(id) {
+  const modal = document.getElementById('delete-modal');
+  const nameSpan = document.getElementById('delete-member-name');
+  const m = members.find(x => String(x.Id) === String(id));
+  if (nameSpan) nameSpan.textContent = m ? m.Nm_Membro : '';
+  currentMemberId = Number(id);
+  if (modal) modal.style.display = 'block';
+}
+function closeDeleteModal(){ const modal = document.getElementById('delete-modal'); if (modal) modal.style.display = 'none'; }
+
+async function deleteMember() {
+  try {
+    const resp = await fetch(`${API_BASE_URL}/api/membros/${currentMemberId}`, { method: 'DELETE' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    await loadMembers();
+  } catch (e) {
+    console.error('Erro ao excluir membro:', e);
+    alert('Erro ao excluir membro. Verifique sua conexão e tente novamente.');
+  }
+  closeDeleteModal();
+}
+
 // ===================== Gráficos =====================
 function initCharts() {
   window.genderChart = new Chart(document.getElementById('genderChart'), {
@@ -208,12 +388,7 @@ function renderBirthdayTable() {
     tbody.appendChild(tr);
   });
 }
-function calculateAge(birth){ 
-  const today = new Date(); 
-  let a = today.getFullYear() - birth.getFullYear(); 
-  const adj = (today.getMonth()<birth.getMonth()) || (today.getMonth()===birth.getMonth() && today.getDate()<birth.getDate()); 
-  return a - (adj?1:0); 
-}
+function calculateAge(birth){ const today = new Date(); let a = today.getFullYear() - birth.getFullYear(); const adj = (today.getMonth()<birth.getMonth()) || (today.getMonth()===birth.getMonth() && today.getDate()<birth.getDate()); return a - (adj?1:0); }
 
 // ===================== Relatórios =====================
 function generateReport(type) {
@@ -348,21 +523,8 @@ async function downloadBackup() {
 }
 
 // ===================== Util =====================
-function getPaginatedMembers(){ 
-  const start=(currentPage-1)*membersPerPage; 
-  const end=start+membersPerPage; 
-  return members.slice(start,end); 
-}
-function formatDate(dateStr){ 
-  if(!dateStr) return '-'; 
-  const d=new Date(dateStr); 
-  if (isNaN(d.getTime())) return '-'; 
-  const dd=String(d.getUTCDate()).padStart(2,'0'); 
-  const mm=String(d.getUTCMonth()+1).padStart(2,'0'); 
-  const yy=d.getUTCFullYear(); 
-  return `${dd}/${mm}/${yy}`; 
-}
+function getPaginatedMembers(){ const start=(currentPage-1)*membersPerPage; const end=start+membersPerPage; return members.slice(start,end); }
+function formatDate(dateStr){ if(!dateStr) return '-'; const d=new Date(dateStr); if (isNaN(d.getTime())) return '-'; const dd=String(d.getUTCDate()).padStart(2,'0'); const mm=String(d.getUTCMonth()+1).padStart(2,'0'); const yy=d.getUTCFullYear(); return `${dd}/${mm}/${yy}`; }
 
 // Mostra dashboard no início
 showSection('dashboard');
-
