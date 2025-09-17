@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Igreja Batista Parque Santa Cruz - Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/style.css"/>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo">
+        <h1>Igreja Batista<br/>Parque Santa Cruz</h1>
+      </div>
+      <div class="nav-menu">
+        <div class="nav-item active" data-section="dashboard"><i>📊</i> Dashboard</div>
+        <div class="nav-item" data-section="membros"><i>👥</i> Membros</div>
+        <div class="nav-item" data-section="relatorios"><i>📋</i> Relatórios</div>
+        <div class="nav-item" data-section="importacao"><i>📤</i> Importar CSV</div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="header">
+        <h2 id="section-title">Dashboard de Membros</h2>
+        <div class="search-box" id="search-box">
+          <input type="text" placeholder="Buscar membro..." id="search-input"/>
+          <i>🔍</i>
+        </div>
+        <button class="btn-primary" id="add-member-btn">+ Novo Membro</button>
+      </div>
+
+      <!-- Dashboard Section -->
+      <div id="dashboard-section" class="section active">
+        <div class="stats-cards">
+          <div class="card stat-card"><h3>Total de Membros</h3><div class="number" id="total-members">0</div></div>
+          <div class="card stat-card"><h3>Membros Ativos</h3><div class="number" id="active-members">0</div></div>
+          <div class="card stat-card"><h3>Batizados</h3><div class="number" id="baptized-members">0</div></div>
+          <div class="card stat-card"><h3>Aniversariantes</h3><div class="number" id="birthday-members">0</div></div>
+        </div>
+
+        <div class="charts">
+          <div class="card">
+            <h3>Distribuição por Gênero</h3>
+            <div class="chart-container"><canvas id="genderChart"></canvas></div>
+          </div>
+          <div class="card">
+            <h3>Membros por Status</h3>
+            <div class="chart-container"><canvas id="statusChart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Aniversariantes do Mês</h3>
+          <div class="table-container">
+            <table class="data-table">
+              <thead><tr><th>Nome</th><th>Data de Nascimento</th><th>Idade</th></tr></thead>
+              <tbody id="birthday-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Members Section -->
+      <div id="membros-section" class="section">
+        <div class="table-controls">
+          <div class="filters">
+            <select id="status-filter">
+              <option value="">Todos os status</option>
+              <option value="Ativo">Ativo</option>
+              <option value="Inativo">Inativo</option>
+            </select>
+            <select id="gender-filter">
+              <option value="">Todos os gêneros</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+            </select>
+            <select id="vinculo-filter">
+              <option value="">Todos os vínculos</option>
+              <option value="Membro">Membro</option>
+              <option value="Congregado">Congregado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table" id="members-table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Status</th>
+                <th>Sexo</th>
+                <th>Vínculo</th>
+                <th>Data Nasc.</th>
+                <th>Celular</th>
+                <th>Tem Filhos?</th>
+                <th>Batizado</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="members-table-body"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+      <!-- Reports Section -->
+      <div id="relatorios-section" class="section">
+        <div class="card">
+          <h3>Gerar Relatórios</h3>
+          <div class="report-options">
+            <div class="report-option" data-report="nominal"><i>📝</i><span>Por Nome</span></div>
+            <div class="report-option" data-report="sexo"><i>👥</i><span>Por Sexo</span></div>
+            <div class="report-option" data-report="status"><i>✅</i><span>Por Status</span></div>
+            <div class="report-option" data-report="aniversariantes"><i>🎂</i><span>Aniversariantes do Mês</span></div>
+            <div class="report-option" data-report="pais"><i>👨</i><span>Pais (Homens com filhos)</span></div>
+            <div class="report-option" data-report="maes"><i>👩</i><span>Mães (Mulheres com filhos)</span></div>
+            <div class="report-option" data-report="membros"><i>✅</i><span>Membros</span></div>
+            <div class="report-option" data-report="congregados"><i>📋</i><span>Congregados</span></div>
+          </div>
+          <div class="report-output" id="report-container"></div>
+        </div>
+      </div>
+
+      <!-- Import Section -->
+      <div id="importacao-section" class="section">
+        <div class="card">
+          <h3>Importar Dados</h3>
+          <div class="import-instructions">
+            <p>Campos obrigatórios: Nm_Membro, Status, Tem_Filhos, Sexo, Tp_Vinculo, Batizado, Celular, Data_Nasc, CPF.</p>
+            <p><strong>Nota:</strong> Se o arquivo trouxer a coluna <em>Membro</em> (Sim/Não), ela será convertida para <em>Tp_Vinculo</em> (Membro/Congregado).</p>
+          </div>
+          <div class="import-controls">
+            <input type="file" id="csv-file" accept=".csv"/>
+            <button class="btn-primary" id="import-btn">Importar CSV</button>
+            <button class="btn-secondary" id="download-backup-btn">Baixar CSV</button>
+          </div>
+          <div class="import-results" id="import-results"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="member-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">Adicionar Novo Membro</h3>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <form id="member-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="Nm_Membro">Nome completo *</label>
+              <input type="text" id="Nm_Membro" name="Nm_Membro" required/>
+            </div>
+            <div class="form-group">
+              <label for="Status">Status *</label>
+              <select id="Status" name="Status" required>
+                <option value="Ativo">Ativo</option>
+                <option value="Inativo">Inativo</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="Tem_Filhos">Tem filhos? *</label>
+              <select id="Tem_Filhos" name="Tem_Filhos" required>
+                <option value="Sim">Sim</option>
+                <option value="Não">Não</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="Sexo">Sexo *</label>
+              <select id="Sexo" name="Sexo" required>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="Tp_Vinculo">Tipo de Vínculo *</label>
+              <select id="Tp_Vinculo" name="Tp_Vinculo" required>
+                <option value="Membro">Membro</option>
+                <option value="Congregado">Congregado</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="Batizado">Batizado *</label>
+              <select id="Batizado" name="Batizado" required>
+                <option value="Sim">Sim</option>
+                <option value="Não">Não</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="Celular">Celular *</label>
+              <input type="tel" id="Celular" name="Celular" required/>
+            </div>
+            <div class="form-group">
+              <label for="Data_Nasc">Data de Nascimento *</label>
+              <input type="date" id="Data_Nasc" name="Data_Nasc" required/>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="CPF">CPF *</label>
+              <input type="text" id="CPF" name="CPF" required/>
+            </div>
+            <div class="form-group">
+              <label for="Estado_Civil">Estado Civil</label>
+              <select id="Estado_Civil" name="Estado_Civil">
+                <option value="">Selecione</option>
+                <option value="Solteiro">Solteiro</option>
+                <option value="Casado">Casado</option>
+                <option value="Divorciado">Divorciado</option>
+                <option value="Viúvo">Viúvo</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group"><label for="Naturalidade">Naturalidade</label><input type="text" id="Naturalidade" name="Naturalidade"/></div>
+          <div class="form-group">
+            <label for="Escolaridade">Escolaridade</label>
+            <select id="Escolaridade" name="Escolaridade">
+              <option value="">Selecione</option>
+              <option value="Fundamental">Fundamental</option>
+              <option value="Médio">Médio</option>
+              <option value="Superior">Superior</option>
+              <option value="Pós-graduação">Pós-graduação</option>
+            </select>
+          </div>
+
+          <div class="form-group"><label for="Profissao">Profissão</label><input type="text" id="Profissao" name="Profissao"/></div>
+          <div class="form-group"><label for="Nm_Conjuge">Nome do Cônjuge</label><input type="text" id="Nm_Conjuge" name="Nm_Conjuge"/></div>
+          <div class="form-group"><label for="Endereco">Endereço</label><input type="text" id="Endereco" name="Endereco"/></div>
+
+          <div class="form-row">
+            <div class="form-group"><label for="Comp_Endereco">Complemento</label><input type="text" id="Comp_Endereco" name="Comp_Endereco"/></div>
+            <div class="form-group"><label for="Bairro">Bairro</label><input type="text" id="Bairro" name="Bairro"/></div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group"><label for="Cidade">Cidade</label><input type="text" id="Cidade" name="Cidade"/></div>
+            <div class="form-group"><label for="CEP">CEP</label><input type="text" id="CEP" name="CEP"/></div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group"><label for="Nm_Mae">Nome da Mãe</label><input type="text" id="Nm_Mae" name="Nm_Mae"/></div>
+            <div class="form-group"><label for="Nm_Pai">Nome do Pai</label><input type="text" id="Nm_Pai" name="Nm_Pai"/></div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" id="cancel-btn">Cancelar</button>
+            <button type="submit" class="btn-primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="delete-modal" class="modal">
+    <div class="modal-content small">
+      <div class="modal-header">
+        <h3>Confirmar Exclusão</h3>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir o membro <span id="delete-member-name"></span>?</p>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" id="cancel-delete-btn">Cancelar</button>
+          <button type="button" class="btn-danger" id="confirm-delete-btn">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/script.js"></script>
+</body>
+</html>
