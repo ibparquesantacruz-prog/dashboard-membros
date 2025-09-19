@@ -1,0 +1,8 @@
+# Dependências e builds
+node_modules/
+.next/
+dist/
+out/
+
+# Arquivos de ambiente
+.env
